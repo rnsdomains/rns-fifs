@@ -1,0 +1,23 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/tpm
+
+    docker:
+      - image: circleci/node:latest
+
+    steps:
+      - checkout
+      - run:
+          name: Prepare Truffle
+          command: sudo npm install -g truffle
+
+      - run:
+          name: Install rns-fifs
+          command: |
+                    cd ~/tpm/
+                    npm install  
+      - run:
+          name: Run Truffle Tests
+          command: npm test
+
