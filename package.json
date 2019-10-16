@@ -26,5 +26,10 @@
   "homepage": "https://github.com/rnsdomains/rns-fifs#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.1",
+    "chai": "^4.2.0",
+    "eth-ens-namehash": "^2.0.8"
   }
 }
