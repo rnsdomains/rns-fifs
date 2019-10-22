@@ -8,7 +8,7 @@ contract('RSKOwner - ERC-721', async () => {
   let rskOwner;
 
   beforeEach(async () => {
-    rskOwner = await RSKOwner.new(ZERO_ADDRESS);
+    rskOwner = await RSKOwner.new(ZERO_ADDRESS, 0);
   });
 
   it('should implement ERC-721 interface', async () => {

@@ -2,7 +2,6 @@ const RNS = artifacts.require('RNS');
 const Token = artifacts.require('ERC677TokenContract');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
-const Deed = artifacts.require('TokenDeed');
 
 const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
@@ -17,7 +16,7 @@ contract('RSK Owner - registrar role', async (accounts) => {
     tokenRegistrar = await TokenRegistrar.new(rns.address, namehash('rsk'), token.address);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 
-    rskOwner = await RSKOwner.new(tokenRegistrar.address);
+    rskOwner = await RSKOwner.new(tokenRegistrar.address, 0);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
   });
 

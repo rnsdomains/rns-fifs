@@ -12,6 +12,8 @@ contract RSKOwner is ERC721, Ownable {
 
     event Register();
 
+    uint public migrationDeadline = 0;
+
     address private previousRegistrar;
     mapping (uint256 => uint) public expirationTime;
 
@@ -25,8 +27,14 @@ contract RSKOwner is ERC721, Ownable {
         _;
     }
 
-    constructor (address _previousRegistrar) public {
+    modifier registrationLive {
+        require(now >= migrationDeadline, "Registration not available.");
+        _;
+    }
+
+    constructor (address _previousRegistrar, uint migrationTime) public {
         previousRegistrar = _previousRegistrar;
+        migrationDeadline = now.add(migrationTime);
     }
 
     // Auction migration
@@ -50,7 +58,7 @@ contract RSKOwner is ERC721, Ownable {
         registrars.remove(registrar);
     }
 
-    function register() public onlyRegistrar {
+    function register() public onlyRegistrar registrationLive {
         emit Register();
     }
 }

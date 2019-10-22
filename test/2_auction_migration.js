@@ -72,7 +72,7 @@ contract('RSK Owner - auction migration', async (accounts) => {
     };
 
     createRSKOwner = async () => {
-      const rskOwner = await RSKOwner.new(tokenRegistrar.address);
+      const rskOwner = await RSKOwner.new(tokenRegistrar.address, 0);
       await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
       return rskOwner;
     };
