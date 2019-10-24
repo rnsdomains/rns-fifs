@@ -12,19 +12,26 @@ contract('RSK Owner - migration period', async (accounts) => {
   const migrationPeriod = web3.utils.toBN('1296000'); // 15 days
 
   beforeEach(async () => {
+    const rootNode = namehash('rsk');
+
     rns = await RNS.new();
     token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
-    tokenRegistrar = await TokenRegistrar.new(rns.address, namehash('rsk'), token.address);
+    tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 
-    rskOwner = await RSKOwner.new(tokenRegistrar.address, migrationPeriod);
+    rskOwner = await RSKOwner.new(
+      tokenRegistrar.address,
+      migrationPeriod,
+      rns.address,
+      rootNode,
+    );
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
     await rskOwner.addRegistrar(accounts[2], { from: accounts[0] });
   });
 
   it('should not allow to register for a given period', async () => {
     await helpers.expectRevert(
-      rskOwner.register({ from: accounts[2] }),
+      rskOwner.register(web3.utils.sha3('ilanolkies'), accounts[3], web3.utils.toBN(1), { from: accounts[2] }),
       'Registration not available.'
     );
   });
@@ -37,7 +44,7 @@ contract('RSK Owner - migration period', async (accounts) => {
       id: 0,
     }, () => { });
 
-    await rskOwner.register({ from: accounts[2] });
+    await rskOwner.register(web3.utils.sha3('ilanolkies'), accounts[3], web3.utils.toBN(1), { from: accounts[2] });
     // testing no revert, no actions taken for register() yet
   });
 });

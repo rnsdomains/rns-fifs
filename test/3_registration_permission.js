@@ -11,12 +11,19 @@ contract('RSK Owner - registrar role', async (accounts) => {
   let rns, token, tokenRegistrar, rskOwner;
 
   beforeEach(async () => {
+    const rootNode = namehash('rsk');
+
     rns = await RNS.new();
     token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
-    tokenRegistrar = await TokenRegistrar.new(rns.address, namehash('rsk'), token.address);
+    tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 
-    rskOwner = await RSKOwner.new(tokenRegistrar.address, 0);
+    rskOwner = await RSKOwner.new(
+      tokenRegistrar.address,
+      0,
+      rns.address,
+      rootNode,
+    );
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
   });
 
@@ -68,7 +75,7 @@ contract('RSK Owner - registrar role', async (accounts) => {
   describe('should manage access to registration', async () => {
     it('should allow only registrar to execute registration', async () => {
       await helpers.expectRevert(
-        rskOwner.register({ from: accounts[1] }),
+        rskOwner.register(web3.utils.sha3('ilanolkies'), accounts[3], web3.utils.toBN(1), { from: accounts[1] }),
         'Only registrar.'
       );
     });
@@ -76,7 +83,7 @@ contract('RSK Owner - registrar role', async (accounts) => {
     it('should allow registrar to execute registration', async () => {
       await rskOwner.addRegistrar(accounts[2], { from: accounts[0] });
 
-      await rskOwner.register({ from: accounts[2] });
+      await rskOwner.register(web3.utils.sha3('ilanolkies'), accounts[3], web3.utils.toBN(1), { from: accounts[2] });
       // testing no revert, no actions taken for register() yet
     });
   });
