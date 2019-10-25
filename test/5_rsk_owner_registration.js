@@ -165,6 +165,13 @@ contract('RSK Owner - registration', async (accounts) => {
       id: 0,
     }, () => { });
 
+    await web3.currentProvider.send({
+      jsonrpc: '2.0',
+      method: 'evm_mine',
+      params: [],
+      id: 1
+    }, () => {});
+
     await helpers.expectRevert(
       rskOwner.ownerOf(label),
       'Owner query for expired name',
@@ -201,6 +208,13 @@ contract('RSK Owner - registration', async (accounts) => {
       params: [1296001], // 15 days + 1 sec
       id: 0,
     }, () => { });
+
+    await web3.currentProvider.send({
+      jsonrpc: '2.0',
+      method: 'evm_mine',
+      params: [],
+      id: 1
+    }, () => {});
 
     expect(await rskOwner.available(tokenId)).to.be.true;
   });
