@@ -39,6 +39,12 @@ contract('FIFS Registrar', async (accounts) => {
     await rskOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
   });
 
+  it('should have deployer as owner', async () => {
+    const owner = await rskOwner.owner();
+
+    expect(owner).to.eq(accounts[0]);
+  });
+
   describe('committing', async () => {
     const label = web3.utils.sha3('ilanolkies');
     const owner = accounts[4];
@@ -152,6 +158,76 @@ contract('FIFS Registrar', async (accounts) => {
         fifsRegistrar.register(name, accounts[6], secret, duration),
         'No commitment found'
       );
+    });
+  });
+
+  describe('update commitment age', async () => {
+    it('should not allow not owner to set min commitment age', async () => {
+      await helpers.expectRevert(
+        fifsRegistrar.setMinCommitmentAge(web3.utils.toBN(1), { from: accounts[2] }),
+        'Ownable: caller is not the owner'
+      );
+    });
+
+    it('should allow owner to set min commitment age', async () => {
+      const minCommitmentAge = web3.utils.toBN(120);
+
+      await fifsRegistrar.setMinCommitmentAge(minCommitmentAge, { from: accounts[0] });
+
+      const actualMinCommitmentAge = await fifsRegistrar.minCommitmentAge();
+
+      expect(actualMinCommitmentAge).to.be.bignumber.eq(minCommitmentAge);
+    });
+
+    it('should increase time for commit-reveal process', async () => {
+      const name = 'ilanolkies';
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+      await fifsRegistrar.setMinCommitmentAge(web3.utils.toBN(120), { from: accounts[0] });
+
+      const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      expect(await fifsRegistrar.canReveal(commitment)).to.be.false;
+
+      await web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_increaseTime',
+        params: [61], // 1 minute + 1 sec
+        id: 0,
+      }, () => { });
+
+      await web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_mine',
+        params: [],
+        id: 1
+      }, () => {});
+
+      expect(await fifsRegistrar.canReveal(commitment)).to.be.false;
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, owner, secret, duration),
+        'No commitment found'
+      );
+
+      await web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_increaseTime',
+        params: [60], // 1 minute
+        id: 0,
+      }, () => { });
+
+      await web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_mine',
+        params: [],
+        id: 1
+      }, () => {});
+
+      expect(await fifsRegistrar.canReveal(commitment)).to.be.true;
     });
   });
 });
