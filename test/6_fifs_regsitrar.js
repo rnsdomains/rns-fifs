@@ -28,12 +28,7 @@ contract('FIFS Registrar', async (accounts) => {
     );
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
 
-    await web3.currentProvider.send({
-      jsonrpc: '2.0',
-      method: 'evm_increaseTime',
-      params: [1296001], // 15 days + 1 sec
-      id: 0,
-    }, () => { });
+    await helpers.time.increase(1296001);
 
     fifsRegistrar = await FIFSRegistrar.new();
     await rskOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
@@ -94,19 +89,7 @@ contract('FIFS Registrar', async (accounts) => {
     it('should be able to reveal after one minute', async () => {
       await fifsRegistrar.commit(commitment);
 
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
-        params: [61], // 1 minute + 1 sec
-        id: 0,
-      }, () => { });
-
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_mine',
-        params: [],
-        id: 1
-      }, () => {});
+      await helpers.time.increase(61);
 
       const canReveal = await fifsRegistrar.canReveal(commitment);
 
@@ -192,19 +175,7 @@ contract('FIFS Registrar', async (accounts) => {
 
       expect(await fifsRegistrar.canReveal(commitment)).to.be.false;
 
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
-        params: [61], // 1 minute + 1 sec
-        id: 0,
-      }, () => { });
-
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_mine',
-        params: [],
-        id: 1
-      }, () => {});
+      await helpers.time.increase(61);
 
       expect(await fifsRegistrar.canReveal(commitment)).to.be.false;
 
@@ -213,19 +184,7 @@ contract('FIFS Registrar', async (accounts) => {
         'No commitment found'
       );
 
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_increaseTime',
-        params: [60], // 1 minute
-        id: 0,
-      }, () => { });
-
-      await web3.currentProvider.send({
-        jsonrpc: '2.0',
-        method: 'evm_mine',
-        params: [],
-        id: 1
-      }, () => {});
+      await helpers.time.increase(60);
 
       expect(await fifsRegistrar.canReveal(commitment)).to.be.true;
     });
