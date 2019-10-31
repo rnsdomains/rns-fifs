@@ -198,4 +198,49 @@ contract('FIFS Registrar', async (accounts) => {
       expect(await fifsRegistrar.canReveal(commitment)).to.be.true;
     });
   });
+
+  describe('initial price', async () => {
+    it('1 year - 2 rif', async () => {
+      const name = 'ilanolkies';
+      const duration = web3.utils.toBN(1);
+
+      expect(
+        await fifsRegistrar.price(name, 0, duration)
+      ).to.be.bignumber.eq(
+        web3.utils.toBN('2000000000000000000')
+      );
+    });
+
+    it('2 year - 4 rif', async () => {
+      const name = 'ilanolkies';
+      const duration = web3.utils.toBN(2);
+
+      expect(
+        await fifsRegistrar.price(name, 0, duration)
+      ).to.be.bignumber.eq(
+        web3.utils.toBN('4000000000000000000')
+      );
+    });
+
+    it('2+k year - 4+k rif', async () => {
+      const name = 'ilanolkies';
+
+      for (let i = 0; i < 10; i++) {
+        const duration = web3.utils.toBN(3).add(web3.utils.toBN(i));
+
+        expect(
+          await fifsRegistrar.price(name, 0, duration)
+        ).to.be.bignumber.eq(
+          web3.utils.toBN('4000000000000000000').add(duration.sub(web3.utils.toBN(2)).mul(web3.utils.toBN('1000000000000000000')))
+        );
+      }
+    });
+
+    it('should not allow to overflow price', async () => {
+      await helpers.expectRevert(
+        fifsRegistrar.price(name, 0, helpers.constants.MAX_UINT256.div(web3.utils.toBN('1000000000000000000'))),
+        'SafeMath: addition overflow'
+      );
+    });
+  });
 });

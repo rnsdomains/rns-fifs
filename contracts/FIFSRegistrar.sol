@@ -58,4 +58,13 @@ contract FIFSRegistrar is Ownable {
     function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
     }
+
+    function price (string memory /*name*/, uint /*expires*/, uint duration) public pure returns(uint) {
+        if (duration == 1) return 2 * (10**18);
+        if (duration == 2) return 4 * (10**18);
+        else {
+            uint base = 4 * (10 ** 18);
+            return base.add(duration.sub(2).mul(10**18));
+        }
+    }
 }
