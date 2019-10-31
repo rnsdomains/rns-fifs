@@ -16,6 +16,13 @@ contract FIFSRegistrar {
     }
 
     function canReveal(bytes32 commitment) public view returns (bool) {
-        return now > commitmentRevealTime[commitment];
+        uint revealTime = commitmentRevealTime[commitment];
+        return 0 < revealTime && revealTime <= now;
+    }
+
+    function register(string memory name, address _owner, bytes32 secret, uint duration) public {
+        bytes32 label = keccak256(abi.encodePacked(name));
+        bytes32 commitment = makeCommitment(label, _owner, secret);
+        require(canReveal(commitment), "No commitment found");
     }
 }

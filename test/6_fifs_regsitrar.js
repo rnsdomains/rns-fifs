@@ -77,17 +77,17 @@ contract('FIFS Registrar', async (accounts) => {
         accounts[4],
         '0x0000000000000000000000000000000000000000000000000000000000001234',
       );
-
-      await fifsRegistrar.commit(commitment);
     });
 
-    it('should not be able to reveal after committing', async () => {
+    it('should not be able to reveal before committing', async () => {
       const canReveal = await fifsRegistrar.canReveal(commitment);
 
       expect(canReveal).to.be.false;
     });
 
     it('should be able to reveal after one minute', async () => {
+      await fifsRegistrar.commit(commitment);
+
       await web3.currentProvider.send({
         jsonrpc: '2.0',
         method: 'evm_increaseTime',
@@ -105,6 +105,53 @@ contract('FIFS Registrar', async (accounts) => {
       const canReveal = await fifsRegistrar.canReveal(commitment);
 
       expect(canReveal).to.be.true;
+    });
+  });
+
+  describe('revealing', async () => {
+    const name = 'ilanolkies';
+    const owner = accounts[5];
+    const duration = web3.utils.toBN('1');
+    const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+    let commitment;
+
+    beforeEach(async () => {
+      commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+    })
+
+    it('should not allow to register with no commitment', async () => {
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, owner, secret, duration),
+        'No commitment found'
+      );
+    });
+
+    it('should not allow to register before commitment maturity', async () => {
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, owner, secret, duration),
+        'No commitment found'
+      );
+    });
+
+    it('should not allow to reveal with a wrong secret', async () => {
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, owner, '0x0000000000000000000000000000000000000000000000000000000000005678', duration),
+        'No commitment found'
+      );
+    });
+
+    it('should not allow to change owner of a commitment', async () => {
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, accounts[6], secret, duration),
+        'No commitment found'
+      );
     });
   });
 });
