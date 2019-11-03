@@ -1,0 +1,4 @@
+{
+    "filter_paths": "contracts/testing,node_modules",
+    "detectors_to_exclude": "pragma"
+}

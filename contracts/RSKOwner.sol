@@ -56,7 +56,7 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     // Auction migration
-    function acceptRegistrarTransfer(bytes32 label, TokenDeed deed, uint) public onlyPreviousRegistrar {
+    function acceptRegistrarTransfer(bytes32 label, TokenDeed deed, uint) external onlyPreviousRegistrar {
         uint256 tokenId = uint256(label);
         expirationTime[tokenId] = deed.expirationDate();
         _mint(deed.owner(), tokenId);
@@ -64,20 +64,20 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     // Registrar role
-    function addRegistrar(address registrar) public onlyOwner {
+    function addRegistrar(address registrar) external onlyOwner {
         registrars.add(registrar);
     }
 
-    function isRegistrar(address registrar) public view returns (bool) {
+    function isRegistrar(address registrar) external view returns (bool) {
         return registrars.has(registrar);
     }
 
-    function removeRegistrar(address registrar) public onlyOwner {
+    function removeRegistrar(address registrar) external onlyOwner {
         registrars.remove(registrar);
     }
 
     // Registration
-    function register(bytes32 label, address owner, uint duration) public onlyRegistrar registrationLive {
+    function register(bytes32 label, address tokenOwner, uint duration) external onlyRegistrar registrationLive {
         uint256 tokenId = uint256(label);
 
         require(available(tokenId), "Not available");
@@ -89,8 +89,8 @@ contract RSKOwner is ERC721, Ownable {
         if (_exists(tokenId))
             _burn(tokenId);
 
-        _mint(owner, tokenId);
+        _mint(tokenOwner, tokenId);
 
-        rns.setSubnodeOwner(rootNode, label, owner);
+        rns.setSubnodeOwner(rootNode, label, tokenOwner);
     }
 }
