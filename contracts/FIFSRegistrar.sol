@@ -9,11 +9,11 @@ contract FIFSRegistrar is Ownable {
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
 
-    function makeCommitment (bytes32 label, address _owner, bytes32 secret) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(label, _owner, secret));
+    function makeCommitment (bytes32 label, address nameOwner, bytes32 secret) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(label, nameOwner, secret));
     }
 
-    function commit(bytes32 commitment) public {
+    function commit(bytes32 commitment) external {
         commitmentRevealTime[commitment] = now.add(minCommitmentAge);
     }
 
@@ -22,13 +22,13 @@ contract FIFSRegistrar is Ownable {
         return 0 < revealTime && revealTime <= now;
     }
 
-    function register(string memory name, address _owner, bytes32 secret, uint duration) public {
+    function register(string calldata name, address nameOwner, bytes32 secret, uint /*duration*/) external view {
         bytes32 label = keccak256(abi.encodePacked(name));
-        bytes32 commitment = makeCommitment(label, _owner, secret);
+        bytes32 commitment = makeCommitment(label, nameOwner, secret);
         require(canReveal(commitment), "No commitment found");
     }
 
-    function setMinCommitmentAge (uint newMinCommitmentAge) public onlyOwner {
+    function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
     }
 }
