@@ -2,6 +2,7 @@ const RNS = artifacts.require('RNS');
 const RIF = artifacts.require('ERC677TokenContract');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
+const FIFSRegistrar = artifacts.require('FIFSRegistrar');
 
 const namehash = require('eth-ens-namehash').hash;
 
@@ -65,13 +66,19 @@ module.exports = (deployer, network, accounts) => {
       return tokenRegistrar.finalizeAuction(label)
     })
     .then(() => {
-      return deployer.deploy(RSKOwner, tokenRegistrar.address);
+      return deployer.deploy(RSKOwner, tokenRegistrar.address, web3.utils.toBN(1296000), rns.address, namehash('rsk'));
     })
     .then(_rskOwner => {
       rskOwner = _rskOwner;
     })
     .then(() => {
       return rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address)
+    })
+    .then(() => {
+      return deployer.deploy(FIFSRegistrar);
+    })
+    .then(fifsRegistrar => {
+      return rskOwner.addRegistrar(fifsRegistrar.address);
     })
   }
 }
