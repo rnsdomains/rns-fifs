@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./testing/ERC677TokenContract.sol";
 import "./RSKOwner.sol";
+import "./AbstractNamePrice.sol";
 
 /// @title First-in first-served registrar
 /// @notice You can use this contract to register .rsk names in RNS.
@@ -16,14 +17,18 @@ contract FIFSRegistrar is Ownable {
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
 
+    event NamePriceChanged(AbstractNamePrice contractAddress);
+
     ERC677TokenContract rif;
     RSKOwner rskOwner;
     address pool;
+    AbstractNamePrice public namePrice;
 
-    constructor (ERC677TokenContract _rif, RSKOwner _rskOwner, address _pool) public {
+    constructor (ERC677TokenContract _rif, RSKOwner _rskOwner, address _pool, AbstractNamePrice namePriceAddr) public {
         rif = _rif;
         rskOwner = _rskOwner;
         pool = _pool;
+        namePrice = namePriceAddr;
     }
 
     /// @notice Create a commitment for register action
@@ -79,12 +84,12 @@ contract FIFSRegistrar is Ownable {
         minCommitmentAge = newMinCommitmentAge;
     }
 
-    /// @notice Price of a name in RIF
-    /// @param duration Time to register the name
-    /// @return cost in RIF
-    function price (string memory /*name*/, uint /*expires*/, uint duration) public pure returns(uint) {
-        if (duration == 1) return 2 * (10**18);
-        if (duration == 2) return 4 * (10**18);
-        return duration.add(2).mul(10**18);
+    function updateNamePriceContract(AbstractNamePrice namePriceAddr) public onlyOwner {
+        namePrice = namePriceAddr;
+        emit NamePriceChanged(namePrice);
+    }
+
+    function price (string memory name, uint expires, uint duration) public view returns(uint) {
+        return namePrice.price(name, expires, duration);
     }
 }

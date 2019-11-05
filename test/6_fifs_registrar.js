@@ -3,14 +3,15 @@ const Token = artifacts.require('ERC677TokenContract');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
+const NamePrice = artifacts.require('NamePrice');
 
 const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
 contract('FIFS Registrar', async (accounts) => {
-  const pool = accounts[9];
-  let rns, token, tokenRegistrar, rskOwner, fifsRegistrar;
+  let rns, token, tokenRegistrar, rskOwner, fifsRegistrar, namePrice;
+  const pool = accounts[6];
 
   beforeEach(async () => {
     const rootNode = namehash('rsk');
@@ -30,8 +31,8 @@ contract('FIFS Registrar', async (accounts) => {
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
 
     await helpers.time.increase(1296001);
-
-    fifsRegistrar = await FIFSRegistrar.new(token.address, rskOwner.address, pool);
+    namePrice = await NamePrice.new();
+    fifsRegistrar = await FIFSRegistrar.new(token.address, rskOwner.address, pool, namePrice.address);
     await rskOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
   });
 
@@ -226,7 +227,7 @@ contract('FIFS Registrar', async (accounts) => {
       );
     });
 
-    it('2+k year - 4+k rif', async () => {
+    it('2+k year - k+2 rif', async () => {
       const name = 'ilanolkies';
 
       for (let i = 0; i < 10; i++) {
@@ -235,12 +236,19 @@ contract('FIFS Registrar', async (accounts) => {
         expect(
           await fifsRegistrar.price(name, 0, duration)
         ).to.be.bignumber.eq(
-          web3.utils.toBN('4000000000000000000').add(duration.sub(web3.utils.toBN(2)).mul(web3.utils.toBN('1000000000000000000')))
+          duration.add(web3.utils.toBN(2)).mul(web3.utils.toBN('1000000000000000000'))
         );
       }
     });
 
-    it('should not allow to overflow price', async () => {
+    it('should not allow to overflow duration', async () => {
+      await helpers.expectRevert(
+        fifsRegistrar.price(name, 0, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
+    });
+
+    it('should not allow to overflow duration when multiplying', async () => {
       await helpers.expectRevert(
         fifsRegistrar.price(name, 0, helpers.constants.MAX_UINT256.div(web3.utils.toBN('1000000000000000000'))),
         'SafeMath: multiplication overflow'
@@ -553,6 +561,63 @@ contract('FIFS Registrar', async (accounts) => {
           to: owner,
           tokenId,
         }
+      );
+    });
+
+    it('should not allow to duration equal to MAX_UINT256 - 1', async () => {
+      const duration = helpers.constants.MAX_UINT256.sub(web3.utils.toBN(1));
+
+      await helpers.expectRevert(
+        fifsRegistrar.price(name, 0, duration),
+        'SafeMath: addition overflow'
+      );
+    });
+
+    it('should not allow to duration equal to MAX_UINT256 - 2', async () => {
+      const duration = helpers.constants.MAX_UINT256.sub(web3.utils.toBN(2));
+
+      await helpers.expectRevert(
+        fifsRegistrar.price(name, 0, duration),
+        'SafeMath: multiplication overflow'
+      );
+    });
+
+    it('should not allow duration equal to 0', async () => {
+      await helpers.expectRevert(
+        fifsRegistrar.price(name, 0, 0),
+        'NamePrice: require positive duration'
+      );
+    });
+  });
+
+  describe('update namePrice contract', async () => {
+    it('should not allow not owner to update the namePriceContract', async () => {
+      const anotherNamePrice = await NamePrice.new();
+      await helpers.expectRevert(
+        fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[2] }),
+        'Ownable: caller is not the owner'
+      );
+    });
+
+    it('should allow owner to to update the namePriceContract', async () => {
+      const anotherNamePrice = await NamePrice.new();
+
+      await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
+
+      const actualNamePrice = await fifsRegistrar.namePrice();
+
+      expect(actualNamePrice).to.be.eq(anotherNamePrice.address);
+    });
+
+    it('should emit an event when the namePriceContract is updated', async () => {
+      const anotherNamePrice = await NamePrice.new();
+
+      await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
+
+      helpers.expectEvent.inLogs(
+        await fifsRegistrar.getPastEvents(),
+        'NamePriceChanged',
+        { contractAddress: anotherNamePrice.address }
       );
     });
   });
