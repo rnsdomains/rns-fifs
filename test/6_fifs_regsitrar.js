@@ -142,6 +142,15 @@ contract('FIFS Registrar', async (accounts) => {
         'No commitment found'
       );
     });
+
+    it('should not allow to postpone a commitment', async () => {
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.expectRevert(
+        fifsRegistrar.commit(commitment, { from: accounts[5] }),
+        'Existent commitment'
+      );
+    })
   });
 
   describe('update commitment age', async () => {

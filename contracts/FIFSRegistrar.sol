@@ -14,6 +14,7 @@ contract FIFSRegistrar is Ownable {
     }
 
     function commit(bytes32 commitment) external {
+        require(commitmentRevealTime[commitment] < 1, "Existent commitment");
         commitmentRevealTime[commitment] = now.add(minCommitmentAge);
     }
 
