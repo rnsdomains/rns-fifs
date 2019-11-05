@@ -16,7 +16,7 @@
     "rns"
   ],
   "scripts": {
-    "test": "truffle test"
+    "test": "truffle test --network rsk"
   },
   "author": "rnsdomains",
   "license": "ISC",
