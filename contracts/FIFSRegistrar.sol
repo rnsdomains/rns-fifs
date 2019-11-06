@@ -84,7 +84,7 @@ contract FIFSRegistrar is Ownable {
         minCommitmentAge = newMinCommitmentAge;
     }
 
-    function updateNamePriceContract(AbstractNamePrice namePriceAddr) public onlyOwner {
+    function updateNamePriceContract(AbstractNamePrice namePriceAddr) external onlyOwner {
         namePrice = namePriceAddr;
         emit NamePriceChanged(namePrice);
     }

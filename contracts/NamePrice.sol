@@ -15,7 +15,7 @@ contract NamePrice is AbstractNamePrice {
     /// @dev This case is a pure function, but converted to view due the AbstractNamePrice spec
     /// @param duration The duration of the given name ownership in years
     /// @return price in RIF tokens
-    function price (string memory /*name*/, uint /*expires*/, uint duration) public view returns(uint) {
+    function price (string calldata /*name*/, uint /*expires*/, uint duration) external view returns(uint) {
         require(duration >=1, "NamePrice: require positive duration");
 
         if (duration == 1) return 2 * (10**18);

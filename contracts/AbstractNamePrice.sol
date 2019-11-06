@@ -4,5 +4,5 @@ pragma solidity ^0.5.3;
 /// @author Javier Esses
 /// @notice Used to define an interface for name price calculations
 contract AbstractNamePrice {
-    function price (string memory name, uint expires, uint duration) public view returns(uint);
+    function price (string calldata name, uint expires, uint duration) external view returns(uint);
 }
