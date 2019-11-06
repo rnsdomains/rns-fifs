@@ -8,6 +8,7 @@ const namehash = require('eth-ens-namehash').hash;
 
 module.exports = (deployer, network, accounts) => {
   if (network == 'develop') {
+    const POOL = accounts[1];
     let rns, rif, tokenRegistrar, rskOwner;
 
     const label = web3.utils.sha3('javiesses');
@@ -75,7 +76,7 @@ module.exports = (deployer, network, accounts) => {
       return rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address)
     })
     .then(() => {
-      return deployer.deploy(FIFSRegistrar);
+      return deployer.deploy(FIFSRegistrar, rif.address, rskOwner.address, POOL);
     })
     .then(fifsRegistrar => {
       return rskOwner.addRegistrar(fifsRegistrar.address);

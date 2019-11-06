@@ -9,6 +9,7 @@ const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
 contract('FIFS Registrar', async (accounts) => {
+  const pool = accounts[9];
   let rns, token, tokenRegistrar, rskOwner, fifsRegistrar;
 
   beforeEach(async () => {
@@ -30,7 +31,7 @@ contract('FIFS Registrar', async (accounts) => {
 
     await helpers.time.increase(1296001);
 
-    fifsRegistrar = await FIFSRegistrar.new();
+    fifsRegistrar = await FIFSRegistrar.new(token.address, rskOwner.address, pool);
     await rskOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
   });
 
@@ -107,6 +108,7 @@ contract('FIFS Registrar', async (accounts) => {
 
     beforeEach(async () => {
       commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+      await token.approve(fifsRegistrar.address, web3.utils.toBN(2));
     })
 
     it('should not allow to register with no commitment', async () => {
@@ -150,7 +152,7 @@ contract('FIFS Registrar', async (accounts) => {
         fifsRegistrar.commit(commitment, { from: accounts[5] }),
         'Existent commitment'
       );
-    })
+    });
   });
 
   describe('update commitment age', async () => {
@@ -176,6 +178,8 @@ contract('FIFS Registrar', async (accounts) => {
       const owner = accounts[5];
       const duration = web3.utils.toBN('1');
       const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+      await token.approve(fifsRegistrar.address, web3.utils.toBN(2));
 
       await fifsRegistrar.setMinCommitmentAge(web3.utils.toBN(120), { from: accounts[0] });
 
@@ -239,7 +243,316 @@ contract('FIFS Registrar', async (accounts) => {
     it('should not allow to overflow price', async () => {
       await helpers.expectRevert(
         fifsRegistrar.price(name, 0, helpers.constants.MAX_UINT256.div(web3.utils.toBN('1000000000000000000'))),
-        'SafeMath: addition overflow'
+        'SafeMath: multiplication overflow'
+      );
+    });
+  });
+
+  describe('registration', async () => {
+    it('should not allow to register with no token approval', async () => {
+      const name = 'ilanolkies';
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+      const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, owner, secret, duration),
+        'SafeMath: subtraction overflow.'
+      );
+    });
+
+    describe('should require to transfer depending on duration', async () => {
+      it('1 year - 2 rif', async () => {
+        const name = 'ilanolkies';
+        const owner = accounts[5];
+        const duration = web3.utils.toBN('1');
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+        await token.approve(fifsRegistrar.address, web3.utils.toBN('2000000000000000000').sub(web3.utils.toBN('1')))
+
+        const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+        await fifsRegistrar.commit(commitment);
+
+        await helpers.time.increase(61);
+
+        await helpers.expectRevert(
+          fifsRegistrar.register(name, owner, secret, duration),
+          'SafeMath: subtraction overflow.'
+        );
+      });
+
+      it('2 year - 4 rif', async () => {
+        const name = 'ilanolkies';
+        const owner = accounts[5];
+        const duration = web3.utils.toBN('2');
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+        await token.approve(fifsRegistrar.address, web3.utils.toBN('4000000000000000000').sub(web3.utils.toBN('1')))
+
+        const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+        await fifsRegistrar.commit(commitment);
+
+        await helpers.time.increase(61);
+
+        await helpers.expectRevert(
+          fifsRegistrar.register(name, owner, secret, duration),
+          'SafeMath: subtraction overflow.'
+        );
+      });
+
+      it('2+k year - 4+k rif', async () => {
+        const owner = accounts[5];
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+        for (let i = 0; i < 10; i++) {
+          const name = `ilanolkies${i}`;
+          const duration = web3.utils.toBN(3).add(web3.utils.toBN(i));
+
+          await token.approve(
+            fifsRegistrar.address,
+            web3.utils.toBN('4000000000000000000')
+            .add(
+              duration.sub(web3.utils.toBN(2))
+              .mul(web3.utils.toBN('1000000000000000000'))
+            )
+            .sub(web3.utils.toBN('1')),
+          );
+
+          const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+          await fifsRegistrar.commit(commitment);
+
+          await helpers.time.increase(61);
+
+          await helpers.expectRevert(
+            fifsRegistrar.register(name, owner, secret, duration),
+            'SafeMath: subtraction overflow.'
+          );
+        }
+      });
+    });
+
+    it('should transfer tokens to a resource pool', async () => {
+      const name = 'ilanolkies';
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+      const amount = web3.utils.toBN('2000000000000000000');
+
+      await token.approve(fifsRegistrar.address, amount);
+
+      const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      const balance = await token.balanceOf(pool);
+
+      await fifsRegistrar.register(name, owner, secret, duration);
+
+      const actualBalance = await token.balanceOf(pool);
+
+      expect(actualBalance).to.be.bignumber.eq(balance.add(amount));
+    });
+
+    it('should only register available names', async () => {
+      const name = 'ilanolkies';
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+      const amount = web3.utils.toBN('2000000000000000000');
+
+      await token.approve(fifsRegistrar.address, amount);
+
+      const commitment = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      await fifsRegistrar.register(name, owner, secret, duration);
+
+      const commitment2 = await fifsRegistrar.makeCommitment(web3.utils.sha3(name), accounts[6], secret, { from: accounts[6] });
+      await fifsRegistrar.commit(commitment2);
+
+      await helpers.time.increase(61);
+
+      await token.transfer(accounts[6], amount);
+      await token.approve(fifsRegistrar.address, amount, { from: accounts[6] });
+
+      await helpers.expectRevert(
+        fifsRegistrar.register(name, accounts[6], secret, duration, { from: accounts[6] }),
+        'Not available'
+      );
+    });
+
+    describe('should register in blocks of 365 days', async () => {
+      it('1 year', async () => {
+        const name = 'ilanolkies';
+        const label = web3.utils.sha3(name);
+        const tokenId = web3.utils.toBN(label);
+        const owner = accounts[5];
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+        const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+        await fifsRegistrar.commit(commitment);
+        await helpers.time.increase(61);
+
+        const duration = web3.utils.toBN('1');
+        const amount = web3.utils.toBN('2000000000000000000');
+
+        await token.approve(fifsRegistrar.address, amount);
+
+        await fifsRegistrar.register(name, owner, secret, duration);
+
+        const expirationTime = await rskOwner.expirationTime(tokenId);
+        const now = await web3.eth.getBlock('latest').then(b => b.timestamp);
+
+        expect(expirationTime).to.be.bignumber.eq(web3.utils.toBN(now).add(web3.utils.toBN('31536000')));
+      });
+
+      it('2 year', async () => {
+        const name = 'ilanolkies';
+        const label = web3.utils.sha3(name);
+        const tokenId = web3.utils.toBN(label);
+        const owner = accounts[5];
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+        const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+        await fifsRegistrar.commit(commitment);
+        await helpers.time.increase(61);
+
+        const duration = web3.utils.toBN('2');
+        const amount = web3.utils.toBN('4000000000000000000');
+
+        await token.approve(fifsRegistrar.address, amount);
+
+        await fifsRegistrar.register(name, owner, secret, duration);
+
+        const expirationTime = await rskOwner.expirationTime(tokenId);
+        const now = await web3.eth.getBlock('latest').then(b => b.timestamp);
+
+        expect(expirationTime).to.be.bignumber.eq(web3.utils.toBN(now).add(web3.utils.toBN('31536000').mul(web3.utils.toBN(2))));
+      });
+
+      it('2+k year', async () => {
+        for (let i = 0; i < 10; i++) {
+          const name = `ilanolkies${i}`;
+          const label = web3.utils.sha3(name);
+          const tokenId = web3.utils.toBN(label);
+          const owner = accounts[5];
+          const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+          const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+          await fifsRegistrar.commit(commitment);
+          await helpers.time.increase(61);
+
+          const duration = web3.utils.toBN(3).add(web3.utils.toBN(i));
+          const amount = web3.utils.toBN('4000000000000000000').add(web3.utils.toBN(i+1).mul(web3.utils.toBN('1000000000000000000')));
+
+          await token.approve(fifsRegistrar.address, amount);
+
+          await fifsRegistrar.register(name, owner, secret, duration);
+
+          const expirationTime = await rskOwner.expirationTime(tokenId);
+          const now = await web3.eth.getBlock('latest').then(b => b.timestamp);
+
+          expect(expirationTime).to.be.bignumber.eq(web3.utils.toBN(now).add(web3.utils.toBN('31536000').mul(web3.utils.toBN(3+i))));
+        }
+      });
+    })
+
+    it('should allow to register for another owner', async () => {
+      const name = 'ilanolkies';
+      const label = web3.utils.sha3(name);
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+      const amount = web3.utils.toBN('2000000000000000000');
+
+      await token.approve(fifsRegistrar.address, amount);
+
+      const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      await fifsRegistrar.register(name, owner, secret, duration);
+
+      expect(
+        await rskOwner.ownerOf(web3.utils.toBN(label))
+      ).to.eq(
+        accounts[5]
+      );
+    });
+
+    it('should remove commitment after registering', async () => {
+      const name = 'ilanolkies';
+      const label = web3.utils.sha3(name);
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+      const amount = web3.utils.toBN('2000000000000000000');
+
+      await token.approve(fifsRegistrar.address, amount);
+
+      const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      await fifsRegistrar.register(name, owner, secret, duration);
+
+      expect(
+        await fifsRegistrar.canReveal(commitment)
+      ).to.be.false;
+    });
+
+    it('should register the name in rsk owner', async () => {
+      const name = 'ilanolkies';
+      const label = web3.utils.sha3(name);
+      const tokenId = web3.utils.toBN(label);
+      const owner = accounts[5];
+      const duration = web3.utils.toBN('1');
+      const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+      const amount = web3.utils.toBN('2000000000000000000');
+
+      await token.approve(fifsRegistrar.address, amount);
+
+      const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+      await fifsRegistrar.commit(commitment);
+
+      await helpers.time.increase(61);
+
+      await fifsRegistrar.register(name, owner, secret, duration);
+
+      const expectedExpiration = await web3.eth.getBlock('latest')
+      .then(b => b.timestamp)
+      .then(web3.utils.toBN)
+      .then(n => n.add(duration.mul(web3.utils.toBN('31536000'))));
+
+      const rskOwnerEvents = await rskOwner.getPastEvents('allEvents');
+
+      helpers.expectEvent.inLogs(
+        rskOwnerEvents,
+        'ExpirationChanged',
+        {
+          tokenId,
+          expirationTime: expectedExpiration,
+        }
+      );
+
+      helpers.expectEvent.inLogs(
+        rskOwnerEvents,
+        'Transfer',
+        {
+          from: helpers.constants.ZERO_ADDRESS,
+          to: owner,
+          tokenId,
+        }
       );
     });
   });
