@@ -2,6 +2,8 @@ pragma solidity ^0.5.3;
 
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./testing/ERC677TokenContract.sol";
+import "./RSKOwner.sol";
 
 /// @title First-in first-served registrar
 /// @notice You can use this contract to register .rsk names in RNS.
@@ -13,6 +15,16 @@ contract FIFSRegistrar is Ownable {
 
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
+
+    ERC677TokenContract rif;
+    RSKOwner rskOwner;
+    address pool;
+
+    constructor (ERC677TokenContract _rif, RSKOwner _rskOwner, address _pool) public {
+        rif = _rif;
+        rskOwner = _rskOwner;
+        pool = _pool;
+    }
 
     /// @notice Create a commitment for register action
     /// @dev Don't use this method on-chain when commiting
@@ -45,11 +57,19 @@ contract FIFSRegistrar is Ownable {
     /// @param name The name to register
     /// @param nameOwner The owner of the name to regiter
     /// @param secret The secret used to make the commitment
-    /// param Time to register in years
-    function register(string calldata name, address nameOwner, bytes32 secret, uint /*duration*/) external view {
+    /// @param duration Time to register in years
+    function register(string calldata name, address nameOwner, bytes32 secret, uint duration) external {
         bytes32 label = keccak256(abi.encodePacked(name));
+
         bytes32 commitment = makeCommitment(label, nameOwner, secret);
         require(canReveal(commitment), "No commitment found");
+
+        uint cost = price(name, rskOwner.expirationTime(uint(label)), duration);
+
+        commitmentRevealTime[commitment] = 0;
+        rskOwner.register(label, nameOwner, duration.mul(365 days));
+
+        require(rif.transferFrom(msg.sender, pool, cost), "Token transfer failed");
     }
 
     /// @notice Change required commitment maturity
@@ -57,5 +77,14 @@ contract FIFSRegistrar is Ownable {
     /// @param newMinCommitmentAge The new maturity required
     function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
+    }
+
+    /// @notice Price of a name in RIF
+    /// @param duration Time to register the name
+    /// @return cost in RIF
+    function price (string memory /*name*/, uint /*expires*/, uint duration) public pure returns(uint) {
+        if (duration == 1) return 2 * (10**18);
+        if (duration == 2) return 4 * (10**18);
+        return duration.add(2).mul(10**18);
     }
 }
