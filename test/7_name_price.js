@@ -1,10 +1,9 @@
 const NamePrice = artifacts.require('NamePrice');
 
-const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
-contract('Name Price', async (accounts) => {
+contract('Name Price', async () => {
   let namePrice;
   const name = 'javiesses';
 
@@ -46,13 +45,6 @@ contract('Name Price', async (accounts) => {
 
   it('should not allow to overflow duration', async () => {
     await helpers.expectRevert(
-      namePrice.price(name, 0, helpers.constants.MAX_UINT256.div(web3.utils.toBN('1000000000000000000'))),
-      'SafeMath: multiplication overflow'
-    );
-  });
-
-  it('should not allow to overflow duration', async () => {
-    await helpers.expectRevert(
       namePrice.price(name, 0, helpers.constants.MAX_UINT256),
       'SafeMath: addition overflow'
     );
@@ -86,7 +78,7 @@ contract('Name Price', async (accounts) => {
   it('should not allow duration equal to 0', async () => {
     await helpers.expectRevert(
       namePrice.price(name, 0, 0),
-      'NamePrice: require positive duration'
+      'NamePrice: no zero duration'
     );
   });
 });

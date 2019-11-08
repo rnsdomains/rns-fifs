@@ -585,12 +585,12 @@ contract('FIFS Registrar', async (accounts) => {
     it('should not allow duration equal to 0', async () => {
       await helpers.expectRevert(
         fifsRegistrar.price(name, 0, 0),
-        'NamePrice: require positive duration'
+        'NamePrice: no zero duration'
       );
     });
   });
 
-  describe('update namePrice contract', async () => {
+  describe('update name price', async () => {
     it('should not allow not owner to update the namePriceContract', async () => {
       const anotherNamePrice = await NamePrice.new();
       await helpers.expectRevert(
@@ -599,7 +599,7 @@ contract('FIFS Registrar', async (accounts) => {
       );
     });
 
-    it('should allow owner to to update the namePriceContract', async () => {
+    it('should allow owner to update name price', async () => {
       const anotherNamePrice = await NamePrice.new();
 
       await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
@@ -609,7 +609,7 @@ contract('FIFS Registrar', async (accounts) => {
       expect(actualNamePrice).to.be.eq(anotherNamePrice.address);
     });
 
-    it('should emit an event when the namePriceContract is updated', async () => {
+    it('should emit an event when name price is updated', async () => {
       const anotherNamePrice = await NamePrice.new();
 
       await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
