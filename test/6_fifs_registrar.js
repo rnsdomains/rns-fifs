@@ -594,7 +594,7 @@ contract('FIFS Registrar', async (accounts) => {
     it('should not allow not owner to update the namePriceContract', async () => {
       const anotherNamePrice = await NamePrice.new();
       await helpers.expectRevert(
-        fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[2] }),
+        fifsRegistrar.setNamePrice(anotherNamePrice.address, { from: accounts[2] }),
         'Ownable: caller is not the owner'
       );
     });
@@ -602,7 +602,7 @@ contract('FIFS Registrar', async (accounts) => {
     it('should allow owner to update name price', async () => {
       const anotherNamePrice = await NamePrice.new();
 
-      await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
+      await fifsRegistrar.setNamePrice(anotherNamePrice.address, { from: accounts[0] });
 
       const actualNamePrice = await fifsRegistrar.namePrice();
 
@@ -612,7 +612,7 @@ contract('FIFS Registrar', async (accounts) => {
     it('should emit an event when name price is updated', async () => {
       const anotherNamePrice = await NamePrice.new();
 
-      await fifsRegistrar.updateNamePriceContract(anotherNamePrice.address, { from: accounts[0] });
+      await fifsRegistrar.setNamePrice(anotherNamePrice.address, { from: accounts[0] });
 
       helpers.expectEvent.inLogs(
         await fifsRegistrar.getPastEvents(),

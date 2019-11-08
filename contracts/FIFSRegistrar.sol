@@ -1,9 +1,9 @@
 pragma solidity ^0.5.3;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./testing/ERC677TokenContract.sol";
 import "./RSKOwner.sol";
+import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
 
 /// @title First-in first-served registrar
@@ -11,24 +11,25 @@ import "./AbstractNamePrice.sol";
 /// First make a commitment of the name to be registered, wait 1
 /// minute, and proceed to register the name.
 /// @dev This contract has permission to register in RSK Owner
-contract FIFSRegistrar is Ownable {
+contract FIFSRegistrar is PricedContract {
     using SafeMath for uint256;
 
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
 
-    event NamePriceChanged(AbstractNamePrice contractAddress);
-
     ERC677TokenContract rif;
     RSKOwner rskOwner;
     address pool;
-    AbstractNamePrice public namePrice;
 
-    constructor (ERC677TokenContract _rif, RSKOwner _rskOwner, address _pool, AbstractNamePrice namePriceAddr) public {
+    constructor (
+        ERC677TokenContract _rif,
+        RSKOwner _rskOwner,
+        address _pool,
+        AbstractNamePrice _namePrice
+    ) public PricedContract(_namePrice) {
         rif = _rif;
         rskOwner = _rskOwner;
         pool = _pool;
-        namePrice = namePriceAddr;
     }
 
     /// @notice Create a commitment for register action
@@ -82,14 +83,5 @@ contract FIFSRegistrar is Ownable {
     /// @param newMinCommitmentAge The new maturity required
     function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
-    }
-
-    function updateNamePriceContract(AbstractNamePrice namePriceAddr) external onlyOwner {
-        namePrice = namePriceAddr;
-        emit NamePriceChanged(namePrice);
-    }
-
-    function price (string memory name, uint expires, uint duration) public view returns(uint) {
-        return namePrice.price(name, expires, duration);
     }
 }
