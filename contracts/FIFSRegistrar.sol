@@ -1,16 +1,17 @@
 pragma solidity ^0.5.3;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./testing/ERC677TokenContract.sol";
 import "./RSKOwner.sol";
+import "./PricedContract.sol";
+import "./AbstractNamePrice.sol";
 
 /// @title First-in first-served registrar
 /// @notice You can use this contract to register .rsk names in RNS.
 /// First make a commitment of the name to be registered, wait 1
 /// minute, and proceed to register the name.
 /// @dev This contract has permission to register in RSK Owner
-contract FIFSRegistrar is Ownable {
+contract FIFSRegistrar is PricedContract {
     using SafeMath for uint256;
 
     mapping (bytes32 => uint) private commitmentRevealTime;
@@ -20,7 +21,12 @@ contract FIFSRegistrar is Ownable {
     RSKOwner rskOwner;
     address pool;
 
-    constructor (ERC677TokenContract _rif, RSKOwner _rskOwner, address _pool) public {
+    constructor (
+        ERC677TokenContract _rif,
+        RSKOwner _rskOwner,
+        address _pool,
+        AbstractNamePrice _namePrice
+    ) public PricedContract(_namePrice) {
         rif = _rif;
         rskOwner = _rskOwner;
         pool = _pool;
@@ -77,14 +83,5 @@ contract FIFSRegistrar is Ownable {
     /// @param newMinCommitmentAge The new maturity required
     function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
-    }
-
-    /// @notice Price of a name in RIF
-    /// @param duration Time to register the name
-    /// @return cost in RIF
-    function price (string memory /*name*/, uint /*expires*/, uint duration) public pure returns(uint) {
-        if (duration == 1) return 2 * (10**18);
-        if (duration == 2) return 4 * (10**18);
-        return duration.add(2).mul(10**18);
     }
 }
