@@ -69,18 +69,7 @@ contract FIFSRegistrar is PricedContract {
     /// @param secret The secret used to make the commitment
     /// @param duration Time to register in years
     function register(string calldata name, address nameOwner, bytes32 secret, uint duration) external {
-        require(name.strlen() >= minLength, "Short names not available");
-
-        bytes32 label = keccak256(abi.encodePacked(name));
-
-        bytes32 commitment = makeCommitment(label, nameOwner, secret);
-        require(canReveal(commitment), "No commitment found");
-
-        uint cost = price(name, rskOwner.expirationTime(uint(label)), duration);
-
-        commitmentRevealTime[commitment] = 0;
-        rskOwner.register(label, nameOwner, duration.mul(365 days));
-
+        uint cost = executeRegistration(name, nameOwner, secret, duration);
         require(rif.transferFrom(msg.sender, pool, cost), "Token transfer failed");
     }
 
@@ -96,5 +85,26 @@ contract FIFSRegistrar is PricedContract {
     /// @param newMinLength The new minimum length enabled
     function setMinLength (uint newMinLength) external onlyOwner {
         minLength = newMinLength;
+    }
+
+    /// @notice Executes registration without any payments.
+    /// @dev This method is used to abstract from payment method.
+    /// @param name The name to register
+    /// @param nameOwner The owner of the name to regiter
+    /// @param secret The secret used to make the commitment
+    /// @param duration Time to register in years
+    /// @return price Price of the name to register
+    function executeRegistration (string memory name, address nameOwner, bytes32 secret, uint duration) private returns (uint) {
+        bytes32 label = keccak256(abi.encodePacked(name));
+
+        require(name.strlen() >= minLength, "Short names not available");
+
+        bytes32 commitment = makeCommitment(label, nameOwner, secret);
+        require(canReveal(commitment), "No commitment found");
+        commitmentRevealTime[commitment] = 0;
+
+        rskOwner.register(label, nameOwner, duration.mul(365 days));
+
+        return price(name, rskOwner.expirationTime(uint(label)), duration);
     }
 }
