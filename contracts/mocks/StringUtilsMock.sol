@@ -5,7 +5,7 @@ import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 contract StringUtilsMock {
     using StringUtils for string;
 
-    function test (string memory input) public pure returns(uint) {
+    function test (string calldata input) external pure returns(uint) {
         return input.strlen();
     }
 }
