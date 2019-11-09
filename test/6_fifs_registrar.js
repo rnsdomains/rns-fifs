@@ -270,7 +270,7 @@ contract('FIFS Registrar', async (accounts) => {
 
       await helpers.expectRevert(
         fifsRegistrar.register(name, owner, secret, duration),
-        'SafeMath: subtraction overflow.'
+        'ERC20: transfer amount exceeds allowance.'
       );
     });
 
@@ -290,7 +290,7 @@ contract('FIFS Registrar', async (accounts) => {
 
         await helpers.expectRevert(
           fifsRegistrar.register(name, owner, secret, duration),
-          'SafeMath: subtraction overflow.'
+          'ERC20: transfer amount exceeds allowance.'
         );
       });
 
@@ -309,7 +309,7 @@ contract('FIFS Registrar', async (accounts) => {
 
         await helpers.expectRevert(
           fifsRegistrar.register(name, owner, secret, duration),
-          'SafeMath: subtraction overflow.'
+          'ERC20: transfer amount exceeds allowance.'
         );
       });
 
@@ -338,7 +338,7 @@ contract('FIFS Registrar', async (accounts) => {
 
           await helpers.expectRevert(
             fifsRegistrar.register(name, owner, secret, duration),
-            'SafeMath: subtraction overflow.'
+            'ERC20: transfer amount exceeds allowance.'
           );
         }
       });
