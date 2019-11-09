@@ -1,4 +1,4 @@
 {
-    "filter_paths": "contracts/testing,node_modules",
+    "filter_paths": "contracts/testing,node_modules,BytesUtils.sol",
     "detectors_to_exclude": "pragma"
 }
