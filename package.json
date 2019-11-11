@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/rnsdomains/rns-fifs#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^2.3.0"
+    "@openzeppelin/contracts": "^2.3.0",
+    "@ensdomains/ethregistrar": "1.2.2"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.1",

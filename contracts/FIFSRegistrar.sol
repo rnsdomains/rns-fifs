@@ -5,6 +5,7 @@ import "./testing/ERC677TokenContract.sol";
 import "./RSKOwner.sol";
 import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
+import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 
 /// @title First-in first-served registrar
 /// @notice You can use this contract to register .rsk names in RNS.
@@ -13,9 +14,12 @@ import "./AbstractNamePrice.sol";
 /// @dev This contract has permission to register in RSK Owner
 contract FIFSRegistrar is PricedContract {
     using SafeMath for uint256;
+    using StringUtils for string;
 
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
+
+    uint public minLength = 5;
 
     ERC677TokenContract rif;
     RSKOwner rskOwner;
@@ -65,6 +69,8 @@ contract FIFSRegistrar is PricedContract {
     /// @param secret The secret used to make the commitment
     /// @param duration Time to register in years
     function register(string calldata name, address nameOwner, bytes32 secret, uint duration) external {
+        require(name.strlen() >= minLength, "Short names not available");
+
         bytes32 label = keccak256(abi.encodePacked(name));
 
         bytes32 commitment = makeCommitment(label, nameOwner, secret);
@@ -83,5 +89,12 @@ contract FIFSRegistrar is PricedContract {
     /// @param newMinCommitmentAge The new maturity required
     function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
         minCommitmentAge = newMinCommitmentAge;
+    }
+
+    /// @notice Change disbaled names
+    /// @dev Only owner
+    /// @param newMinLength The new minimum length enabled
+    function setMinLength (uint newMinLength) external onlyOwner {
+        minLength = newMinLength;
     }
 }

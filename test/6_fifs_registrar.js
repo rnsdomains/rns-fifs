@@ -270,7 +270,7 @@ contract('FIFS Registrar', async (accounts) => {
 
       await helpers.expectRevert(
         fifsRegistrar.register(name, owner, secret, duration),
-        'SafeMath: subtraction overflow.'
+        'ERC20: transfer amount exceeds allowance.'
       );
     });
 
@@ -290,7 +290,7 @@ contract('FIFS Registrar', async (accounts) => {
 
         await helpers.expectRevert(
           fifsRegistrar.register(name, owner, secret, duration),
-          'SafeMath: subtraction overflow.'
+          'ERC20: transfer amount exceeds allowance.'
         );
       });
 
@@ -309,7 +309,7 @@ contract('FIFS Registrar', async (accounts) => {
 
         await helpers.expectRevert(
           fifsRegistrar.register(name, owner, secret, duration),
-          'SafeMath: subtraction overflow.'
+          'ERC20: transfer amount exceeds allowance.'
         );
       });
 
@@ -338,7 +338,7 @@ contract('FIFS Registrar', async (accounts) => {
 
           await helpers.expectRevert(
             fifsRegistrar.register(name, owner, secret, duration),
-            'SafeMath: subtraction overflow.'
+            'ERC20: transfer amount exceeds allowance.'
           );
         }
       });
@@ -619,6 +619,100 @@ contract('FIFS Registrar', async (accounts) => {
         'NamePriceChanged',
         { contractAddress: anotherNamePrice.address }
       );
+    });
+
+    describe('length lock', async () => {
+      describe('should initially lock names of length lower than 5', async () => {
+        let name;
+
+        it('4 characters', () => {
+          name = 'ilan';
+        });
+
+        it('3 characters', () => {
+          name = 'ila';
+        });
+
+        it('2 characters', () => {
+          name = 'il';
+        });
+
+        it('1 characters', () => {
+          name = 'i';
+        });
+
+        it('0 characters', () => {
+          name = '';
+        });
+
+        afterEach(async () => {
+          const label = name ? web3.utils.sha3(name) : '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470';
+          const owner = accounts[5];
+          const duration = web3.utils.toBN('1');
+          const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+          const amount = web3.utils.toBN('2000000000000000000');
+
+          await token.approve(fifsRegistrar.address, amount);
+
+          const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+          await fifsRegistrar.commit(commitment);
+
+          await helpers.time.increase(61);
+
+          await helpers.expectRevert(
+            fifsRegistrar.register(name, owner, secret, duration),
+            'Short names not available',
+          );
+        });
+      });
+
+      it('should not allow not owner to change locked names', async () => {
+        await helpers.expectRevert(
+          fifsRegistrar.setMinLength(web3.utils.toBN(2), { from: accounts[5] }),
+          'Ownable: caller is not the owner'
+        );
+
+        expect(
+          await fifsRegistrar.minLength()
+        ).to.be.bignumber.eq(
+          web3.utils.toBN(5)
+        );
+      });
+
+      it('should allow owner to change locked names', async () => {
+        const minLength = web3.utils.toBN(2);
+        await fifsRegistrar.setMinLength(minLength, { from: accounts[0] }),
+
+        expect(
+          await fifsRegistrar.minLength()
+        ).to.be.bignumber.eq(
+          minLength
+        );
+      });
+
+      it('should allow to register unlocked names', async () => {
+        await fifsRegistrar.setMinLength(web3.utils.toBN(2), { from: accounts[0] });
+
+        const name = 'il';
+        const label = web3.utils.sha3(name);
+        const owner = accounts[5];
+        const duration = web3.utils.toBN('1');
+        const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
+        const amount = web3.utils.toBN('2000000000000000000');
+
+        await token.approve(fifsRegistrar.address, amount);
+
+        const commitment = await fifsRegistrar.makeCommitment(label, owner, secret);
+        await fifsRegistrar.commit(commitment);
+
+        await helpers.time.increase(61);
+
+        await fifsRegistrar.register(name, owner, secret, duration);
+
+        expect(
+          await rskOwner.ownerOf(web3.utils.toBN(label))
+        ).to.eq(owner);
+      });
     });
   });
 });
