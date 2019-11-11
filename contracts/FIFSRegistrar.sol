@@ -129,7 +129,7 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
         | owner | 20 bytes - offset 4
         | secret | 32 bytes - offest 24
         | duration | 32 bytes - offset 56
-        | name | variable size - offset 84
+        | name | variable size - offset 88
      */
 
     /// @notice ERC-677 token fallback function
