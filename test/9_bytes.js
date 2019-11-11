@@ -56,6 +56,15 @@ contract('BytesUtils - bytes to', async () => {
 
       await helpers.expectRevert(bytes.toAddress(input, web3.utils.toBN(0)), 'Short input');
     });
+
+    it('should not allow to overflow offset', async () => {
+      const input = '0x0123456789012345678901234567890123456889';
+
+      await helpers.expectRevert(
+        bytes.toAddress(input, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
+    });
   });
 
   describe('bytes32', async () => {
@@ -103,6 +112,15 @@ contract('BytesUtils - bytes to', async () => {
       const input = '0x00000000000000000000000000000000000000000000000000001234';
 
       await helpers.expectRevert(bytes.toBytes32(input, web3.utils.toBN(0)), 'Short input');
+    });
+
+    it('should not allow to overflow offset', async () => {
+      const input = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+      await helpers.expectRevert(
+        bytes.toAddress(input, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
     });
   });
 
@@ -152,6 +170,15 @@ contract('BytesUtils - bytes to', async () => {
 
       await helpers.expectRevert(bytes.toBytes4(input, web3.utils.toBN(0)), 'Short input');
     });
+
+    it('should not allow to overflow offset', async () => {
+      const input = '0x01234567';
+
+      await helpers.expectRevert(
+        bytes.toAddress(input, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
+    });
   });
 
   describe('uint', async () => {
@@ -199,6 +226,15 @@ contract('BytesUtils - bytes to', async () => {
       const input = '0x00000000000000000000000000000000000000000000000000001234';
 
       await helpers.expectRevert(bytes.toUint(input, web3.utils.toBN(0)), 'Short input');
+    });
+
+    it('should not allow to overflow offset', async () => {
+      const input = '0x0000000000000000000000000000000000000000000000000000000000001234';
+
+      await helpers.expectRevert(
+        bytes.toAddress(input, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
     });
   });
 
@@ -253,6 +289,15 @@ contract('BytesUtils - bytes to', async () => {
       const input = '0x';
 
       await helpers.expectRevert(bytes.methods['toString(bytes,uint256,uint256)'](input, web3.utils.toBN(0), web3.utils.toBN(10)), 'Short input');
+    });
+
+    it('should not allow to overflow offset', async () => {
+      const input = '0x696c616e6f6c6b696573';
+
+      await helpers.expectRevert(
+        bytes.toAddress(input, helpers.constants.MAX_UINT256),
+        'SafeMath: addition overflow'
+      );
     });
   });
 });

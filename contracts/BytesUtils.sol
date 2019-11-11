@@ -1,8 +1,12 @@
 pragma solidity ^0.5.3;
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
+
 library BytesUtils {
+    using SafeMath for uint256;
+
     modifier minLength (uint size, uint offset, uint length) {
-        require(size >= offset + length, "Short input");
+        require(size >= offset.add(length), "Short input");
         _;
     }
 
