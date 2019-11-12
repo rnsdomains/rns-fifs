@@ -97,18 +97,18 @@ contract RSKOwner is ERC721, Ownable {
     // After expiration
     function removeExpired(uint256[] calldata tokenIds) external {
         uint256 tokenId;
+        bytes32 label;
+
         for (uint i = 0; i < tokenIds.length; i++) {
             tokenId = tokenIds[i];
 
             if (_exists(tokenId) && available(tokenId)) {
-                expirationTime[tokenId] = now + 1 days;
-
+                expirationTime[tokenId] = ~uint(0);
                 _burn(tokenId);
-
-                bytes32 label = bytes32(tokenId);
-                rns.setSubnodeOwner(rootNode, label, address(0));
-
                 expirationTime[tokenId] = 0;
+
+                label = bytes32(tokenId);
+                rns.setSubnodeOwner(rootNode, label, address(0));
             }
         }
     }
