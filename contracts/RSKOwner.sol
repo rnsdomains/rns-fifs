@@ -47,7 +47,7 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     function ownerOf(uint256 tokenId) public view returns (address) {
-        require(!_exists(tokenId) || expirationTime[tokenId] > now, "Owner query for expired name");
+        require(expirationTime[tokenId] > now, "ERC721: owner query for nonexistent token");
         return super.ownerOf(tokenId);
     }
 
@@ -61,25 +61,6 @@ contract RSKOwner is ERC721, Ownable {
         expirationTime[tokenId] = deed.expirationDate();
         _mint(deed.owner(), tokenId);
         deed.closeDeed(1000);
-    }
-
-    function removeExpired(uint256[] calldata tokenIds) external {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-
-            if (_exists(tokenId) && available(tokenId)) {
-                // set tomorrow as expiration time so ownerOf(tokenId) won't fail on _burn
-                expirationTime[tokenId] = now + 1 days;
-
-                _burn(tokenId);
-
-                // revoke ownership in RNS and remove
-                bytes32 label = bytes32(tokenId);
-                rns.setSubnodeOwner(rootNode, label, address(0));
-
-                delete expirationTime[tokenId];
-            }
-        }
     }
 
     // Registrar role
@@ -111,5 +92,24 @@ contract RSKOwner is ERC721, Ownable {
         _mint(tokenOwner, tokenId);
 
         rns.setSubnodeOwner(rootNode, label, tokenOwner);
+    }
+
+    // After expiration
+    function removeExpired(uint256[] calldata tokenIds) external {
+        uint256 tokenId;
+        for (uint i = 0; i < tokenIds.length; i++) {
+            tokenId = tokenIds[i];
+
+            if (_exists(tokenId) && available(tokenId)) {
+                expirationTime[tokenId] = now + 1 days;
+
+                _burn(tokenId);
+
+                bytes32 label = bytes32(tokenId);
+                rns.setSubnodeOwner(rootNode, label, address(0));
+
+                expirationTime[tokenId] = 0;
+            }
+        }
     }
 }
