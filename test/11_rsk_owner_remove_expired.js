@@ -286,132 +286,73 @@ contract('FIFS Registrar - Remove expired', async (accounts) => {
       expect(actualOwnerToken2).to.eq(owner);
     });
 
-    describe('only expired names', async () => {
-      it('should not fail for non registered names', async () => {
-        const name1 = 'javiesses1';
-        const name2 = 'javiesses2';
-        const label1 = web3.utils.sha3(name1);
-        const label2 = web3.utils.sha3(name2);
-        const tokenId1 = web3.utils.toBN(label1);
-        const tokenId2 = web3.utils.toBN(label2);
+    describe('should remove expired names', async () => {
+      const name1 = 'javiesses1';
+      const name2 = 'javiesses2';
+      const label1 = web3.utils.sha3(name1);
+      const label2 = web3.utils.sha3(name2);
+      const tokenId1 = web3.utils.toBN(label1);
+      const tokenId2 = web3.utils.toBN(label2);
+      const owner = accounts[0];
+
+      let expirationTime;
+
+      beforeEach(async () => {
+        const duration = web3.utils.toBN('100');
+        await rskOwner.register(label1, owner, duration);
+        await helpers.time.increase(101);
+        await rskOwner.register(label2, owner, duration);
+
+        expirationTime = await rskOwner.expirationTime(tokenId2);
 
         await rskOwner.removeExpired([tokenId1, tokenId2]);
+      });
 
-        expect(
-          await rns.owner(namehash(`${name1}.rsk`))
-        ).to.eq(helpers.constants.ZERO_ADDRESS);
-
+      it('no erc-721 owner', async () => {
         await helpers.expectRevert(
           rskOwner.ownerOf(tokenId1),
           'ERC721: owner query for nonexistent token'
         );
 
         expect(
-          await rns.owner(namehash(`${name2}.rsk`))
+          await rskOwner.ownerOf(tokenId2)
+        ).to.eq(owner);
+      });
+
+      it('rns owner is 0 address', async () => {
+        expect(
+          await rns.owner(namehash(`${name1}.rsk`))
         ).to.eq(helpers.constants.ZERO_ADDRESS);
 
-        await helpers.expectRevert(
-          rskOwner.ownerOf(tokenId2),
-          'ERC721: owner query for nonexistent token'
-        );
+        expect(
+          await rns.owner(namehash(`${name2}.rsk`))
+        ).to.eq(owner);
       });
 
-      it('should not remove non expired names', async () => {
-        const name1 = 'javiesses1';
-        const name2 = 'javiesses2';
-        const label1 = web3.utils.sha3(name1);
-        const label2 = web3.utils.sha3(name2);
-        const tokenId1 = web3.utils.toBN(label1);
-        const tokenId2 = web3.utils.toBN(label2);
-        const owner = accounts[0];
-        const duration = web3.utils.toBN('100');
-
-        await rskOwner.register(label1, owner, duration);
-        await rskOwner.register(label2, owner, duration);
-
-        await rskOwner.removeExpired([tokenId1, tokenId2]);
-
-        const actualOwnerName1 = await rns.owner(namehash(`${name1}.rsk`));
-        expect(actualOwnerName1).to.eq(owner);
-
-        const actualOwnerToken1 = await rskOwner.ownerOf(tokenId1);
-        expect(actualOwnerToken1).to.eq(owner);
-
-        const actualOwnerName2 = await rns.owner(namehash(`${name2}.rsk`));
-        expect(actualOwnerName2).to.eq(owner);
-
-        const actualOwnerToken2 = await rskOwner.ownerOf(tokenId2);
-        expect(actualOwnerToken2).to.eq(owner);
+      it('balance is updated', async () => {
+        expect(
+          await rskOwner.balanceOf(accounts[0])
+        ).to.be.bignumber.eq(web3.utils.toBN(1));
       });
 
-      describe('should remove expired names', async () => {
-        const name1 = 'javiesses1';
-        const name2 = 'javiesses2';
-        const label1 = web3.utils.sha3(name1);
-        const label2 = web3.utils.sha3(name2);
-        const tokenId1 = web3.utils.toBN(label1);
-        const tokenId2 = web3.utils.toBN(label2);
-        const owner = accounts[0];
+      it('should be available', async () => {
+        expect(
+          await rskOwner.available(tokenId1)
+        ).to.be.true;
 
-        beforeEach(async () => {
-          const duration = web3.utils.toBN('100');
-          await rskOwner.register(label1, owner, duration);
-          await helpers.time.increase(101);
-          await rskOwner.register(label2, owner, duration);
-          await rskOwner.removeExpired([tokenId1, tokenId2]);
-        });
+        expect(
+          await rskOwner.available(tokenId2)
+        ).to.be.false;
+      });
 
-        it('no erc-721 owner', async () => {
-          await helpers.expectRevert(
-            rskOwner.ownerOf(tokenId1),
-            'ERC721: owner query for nonexistent token'
-          );
+      it('should set expiration date to 0', async () => {
+        expect(
+          await rskOwner.expirationTime(tokenId1)
+        ).to.be.bignumber.eq(web3.utils.toBN(0));
 
-          expect(
-            await rskOwner.ownerOf(tokenId2)
-          ).to.eq(owner);
-        });
-
-        it('rns owner is 0 address', async () => {
-          expect(
-            await rns.owner(namehash(`${name1}.rsk`))
-          ).to.eq(helpers.constants.ZERO_ADDRESS);
-
-          expect(
-            await rns.owner(namehash(`${name2}.rsk`))
-          ).to.eq(owner);
-        });
-
-        it('balance is updated', async () => {
-          expect(
-            await rskOwner.balanceOf(accounts[0])
-          ).to.be.bignumber.eq(web3.utils.toBN(1));
-        });
-
-        it('should be available', async () => {
-          expect(
-            await rskOwner.available(tokenId1)
-          ).to.be.true;
-
-          expect(
-            await rskOwner.available(tokenId2)
-          ).to.be.false;
-        });
-
-        it('should set expiration date to 0', async () => {
-          expect(
-            await rskOwner.expirationTime(tokenId1)
-          ).to.be.bignumber.eq(web3.utils.toBN(0));
-
-          const expectedExpiration = await web3.eth.getBlock('latest')
-          .then(b => b.timestamp)
-          .then(web3.utils.toBN)
-          .then(n => n.add(web3.utils.toBN('100')));
-
-          expect(
-            await rskOwner.expirationTime(tokenId2)
-          ).to.be.bignumber.eq(expectedExpiration);
-        });
+        expect(
+          await rskOwner.expirationTime(tokenId2)
+        ).to.be.bignumber.eq(expirationTime);
       });
     });
   });
