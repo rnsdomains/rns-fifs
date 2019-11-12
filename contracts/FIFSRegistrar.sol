@@ -6,15 +6,18 @@ import "./RSKOwner.sol";
 import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
+import "./testing/ERC677Receiver.sol";
+import "./BytesUtils.sol";
 
 /// @title First-in first-served registrar
 /// @notice You can use this contract to register .rsk names in RNS.
 /// First make a commitment of the name to be registered, wait 1
 /// minute, and proceed to register the name.
 /// @dev This contract has permission to register in RSK Owner
-contract FIFSRegistrar is PricedContract {
+contract FIFSRegistrar is PricedContract, ERC677Receiver {
     using SafeMath for uint256;
     using StringUtils for string;
+    using BytesUtils for bytes;
 
     mapping (bytes32 => uint) private commitmentRevealTime;
     uint public minCommitmentAge = 1 minutes;
@@ -24,6 +27,9 @@ contract FIFSRegistrar is PricedContract {
     ERC677TokenContract rif;
     RSKOwner rskOwner;
     address pool;
+
+    // sha3('register(string,address,bytes32,uint)')
+    bytes4 constant REGISTER_SIGNATURE = 0xc2c414c8;
 
     constructor (
         ERC677TokenContract _rif,
@@ -69,18 +75,7 @@ contract FIFSRegistrar is PricedContract {
     /// @param secret The secret used to make the commitment
     /// @param duration Time to register in years
     function register(string calldata name, address nameOwner, bytes32 secret, uint duration) external {
-        require(name.strlen() >= minLength, "Short names not available");
-
-        bytes32 label = keccak256(abi.encodePacked(name));
-
-        bytes32 commitment = makeCommitment(label, nameOwner, secret);
-        require(canReveal(commitment), "No commitment found");
-
-        uint cost = price(name, rskOwner.expirationTime(uint(label)), duration);
-
-        commitmentRevealTime[commitment] = 0;
-        rskOwner.register(label, nameOwner, duration.mul(365 days));
-
+        uint cost = executeRegistration(name, nameOwner, secret, duration);
         require(rif.transferFrom(msg.sender, pool, cost), "Token transfer failed");
     }
 
@@ -96,5 +91,68 @@ contract FIFSRegistrar is PricedContract {
     /// @param newMinLength The new minimum length enabled
     function setMinLength (uint newMinLength) external onlyOwner {
         minLength = newMinLength;
+    }
+
+    function registerWithToken(string memory name, address nameOwner, bytes32 secret, uint duration, address from, uint amount) private {
+        uint cost = executeRegistration(name, nameOwner, secret, duration);
+        require(amount >= cost, "Not enough tokens");
+        require(rif.transfer(pool, cost), "Token transfer failed");
+        // Calculated twise because the common case is the exact amount is sent. No variables.
+        if (amount.sub(cost) > 0)
+            require(rif.transfer(from, amount.sub(cost)), "Token transfer failed");
+    }
+
+    /// @notice Executes registration without any payments.
+    /// @dev This method is used to abstract from payment method.
+    /// @param name The name to register
+    /// @param nameOwner The owner of the name to regiter
+    /// @param secret The secret used to make the commitment
+    /// @param duration Time to register in years
+    /// @return price Price of the name to register
+    function executeRegistration (string memory name, address nameOwner, bytes32 secret, uint duration) private returns (uint) {
+        bytes32 label = keccak256(abi.encodePacked(name));
+
+        require(name.strlen() >= minLength, "Short names not available");
+
+        bytes32 commitment = makeCommitment(label, nameOwner, secret);
+        require(canReveal(commitment), "No commitment found");
+        commitmentRevealTime[commitment] = 0;
+
+        rskOwner.register(label, nameOwner, duration.mul(365 days));
+
+        return price(name, rskOwner.expirationTime(uint(label)), duration);
+    }
+
+    /**
+        Register encoding:
+        | signature | 4 bytes - offset 0
+        | owner | 20 bytes - offset 4
+        | secret | 32 bytes - offest 24
+        | duration | 32 bytes - offset 56
+        | name | variable size - offset 88
+     */
+
+    /// @notice ERC-677 token fallback function
+    /// @dev Follow 'Register encoding' to execute a one-transaction regitration.
+    /// @param from token sender
+    /// @param value amount of tokens sent
+    /// @param data data associated with transaction
+    /// @return true if successfull
+    function tokenFallback(address from, uint value, bytes calldata data) external returns (bool) {
+        require(msg.sender == address(rif), "Only RIF token");
+        require(data.length > 88, "Invalid data");
+
+        bytes4 signature = data.toBytes4(0);
+
+        require(signature == REGISTER_SIGNATURE, "Invalid signature");
+
+        address nameOwner = data.toAddress(4);
+        bytes32 secret = data.toBytes32(24);
+        uint duration = data.toUint(56);
+        string memory name = data.toString(88, data.length.sub(88));
+
+        registerWithToken(name, nameOwner, secret, duration, from, value);
+
+        return true;
     }
 }
