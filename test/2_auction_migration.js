@@ -216,4 +216,55 @@ contract('RSK Owner - auction migration', async (accounts) => {
 
     expect(owner).to.eq(resolver);
   });
+
+  describe('should allow to register names when are not owned', async () => {
+    const name = 'ilanolkies';
+    const label = web3.utils.sha3(name);
+    const tokenId = web3.utils.toBN(label);
+
+    it('open', async () => {
+      const rskOwner = await createRSKOwner();
+
+      expect(
+        await rskOwner.available(tokenId)
+      ).to.be.true;
+    });
+
+    it('auction', async () => {
+      await tokenRegistrar.startAuction(label);
+
+      const rskOwner = await createRSKOwner();
+
+      expect(
+        await rskOwner.available(tokenId)
+      ).to.be.true;
+    });
+
+    it('reveal', async () => {
+      await tokenRegistrar.startAuction(label);
+
+      await web3.currentProvider.send({
+        jsonrpc: '2.0',
+        method: 'evm_increaseTime',
+        params: [259200], // 3 days
+        id: 0,
+      }, () => { });
+
+      const rskOwner = await createRSKOwner();
+
+      expect(
+        await rskOwner.available(tokenId)
+      ).to.be.true;
+    });
+
+    it('owned', async () => {
+      await auctionRegister(name, web3.utils.toBN('1000000000000000000'), accounts[1], false);
+
+      const rskOwner = await createRSKOwner();
+
+      expect(
+        await rskOwner.available(tokenId)
+      ).to.be.false;
+    });
+  });
 });

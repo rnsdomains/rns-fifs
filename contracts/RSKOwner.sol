@@ -5,11 +5,12 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
 import "./testing/TokenDeed.sol";
 import "./testing/AbstractRNS.sol";
+import "./testing/TokenRegistrar.sol";
 
 contract RSKOwner is ERC721, Ownable {
     using Roles for Roles.Role;
 
-    address private previousRegistrar;
+    TokenRegistrar private previousRegistrar;
     AbstractRNS private rns;
     bytes32 private rootNode;
 
@@ -21,7 +22,7 @@ contract RSKOwner is ERC721, Ownable {
     event ExpirationChanged(uint256 tokenId, uint expirationTime);
 
     modifier onlyPreviousRegistrar {
-        require(msg.sender == previousRegistrar, "Only previous registrar.");
+        require(msg.sender == address(previousRegistrar), "Only previous registrar.");
         _;
     }
 
@@ -36,7 +37,7 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     constructor (
-        address _previousRegistrar,
+        TokenRegistrar _previousRegistrar,
         AbstractRNS _rns,
         bytes32 _rootNode
     ) public {
@@ -51,7 +52,10 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     function available(uint256 tokenId) public view returns(bool) {
-        return expirationTime[tokenId] < now;
+        return (
+            expirationTime[tokenId] < now &&
+            previousRegistrar.state(bytes32(tokenId)) != TokenRegistrar.Mode.Owned
+        );
     }
 
     // Auction migration
