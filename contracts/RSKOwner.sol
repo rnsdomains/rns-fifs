@@ -47,7 +47,7 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     function ownerOf(uint256 tokenId) public view returns (address) {
-        require(expirationTime[tokenId] > now, "Owner query for expired name");
+        require(expirationTime[tokenId] > now, "ERC721: owner query for nonexistent token");
         return super.ownerOf(tokenId);
     }
 
@@ -92,5 +92,24 @@ contract RSKOwner is ERC721, Ownable {
         _mint(tokenOwner, tokenId);
 
         rns.setSubnodeOwner(rootNode, label, tokenOwner);
+    }
+
+    // After expiration
+    function removeExpired(uint256[] calldata tokenIds) external {
+        uint256 tokenId;
+        bytes32 label;
+
+        for (uint i = 0; i < tokenIds.length; i++) {
+            tokenId = tokenIds[i];
+
+            if (_exists(tokenId) && available(tokenId)) {
+                expirationTime[tokenId] = ~uint(0);
+                _burn(tokenId);
+                expirationTime[tokenId] = 0;
+
+                label = bytes32(tokenId);
+                rns.setSubnodeOwner(rootNode, label, address(0));
+            }
+        }
     }
 }

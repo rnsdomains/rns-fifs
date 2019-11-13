@@ -174,7 +174,7 @@ contract('RSK Owner - registration', async (accounts) => {
 
     await helpers.expectRevert(
       rskOwner.ownerOf(label),
-      'Owner query for expired name',
+      'ERC721: owner query for nonexistent token',
     );
   });
 
