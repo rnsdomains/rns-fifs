@@ -10,7 +10,6 @@ contract('RSK Owner - ERC-721', async () => {
   beforeEach(async () => {
     rskOwner = await RSKOwner.new(
       ZERO_ADDRESS,
-      0,
       ZERO_ADDRESS,
       '0x00',
     );

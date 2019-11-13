@@ -20,10 +20,10 @@ contract('RSK Owner - renovation role', async (accounts) => {
 
     rskOwner = await RSKOwner.new(
       tokenRegistrar.address,
-      0,
       rns.address,
       rootNode,
     );
+
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
   });
 

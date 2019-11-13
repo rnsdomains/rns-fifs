@@ -7,7 +7,7 @@ const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
-contract('FIFS Registrar - Remove expired', async (accounts) => {
+contract('RSK Owner - remove expired', async (accounts) => {
   let rns, token, tokenRegistrar, rskOwner;
 
   beforeEach(async () => {
@@ -17,18 +17,13 @@ contract('FIFS Registrar - Remove expired', async (accounts) => {
     token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
     tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
 
-    const migrationPeriod = web3.utils.toBN('1296000'); // 15 days
-
     rskOwner = await RSKOwner.new(
       tokenRegistrar.address,
-      migrationPeriod,
       rns.address,
       rootNode,
     );
 
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
-
-    await helpers.time.increase(1296001);
 
     await rskOwner.addRegistrar(accounts[0]);
   });
