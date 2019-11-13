@@ -8,12 +8,14 @@ import "./testing/AbstractRNS.sol";
 
 contract RSKOwner is ERC721, Ownable {
     using Roles for Roles.Role;
-    Roles.Role registrars;
 
     uint public migrationDeadline = 0;
     address private previousRegistrar;
     AbstractRNS private rns;
     bytes32 private rootNode;
+
+    Roles.Role registrars;
+    Roles.Role renewers;
 
     mapping (uint256 => uint) public expirationTime;
 
@@ -26,6 +28,11 @@ contract RSKOwner is ERC721, Ownable {
 
     modifier onlyRegistrar {
         require(registrars.has(msg.sender), "Only registrar.");
+        _;
+    }
+
+    modifier onlyRenewer {
+        require(renewers.has(msg.sender), "Only renewer.");
         _;
     }
 
@@ -92,6 +99,28 @@ contract RSKOwner is ERC721, Ownable {
         _mint(tokenOwner, tokenId);
 
         rns.setSubnodeOwner(rootNode, label, tokenOwner);
+    }
+
+    // Renewer role
+    function addRenewer(address renewer) external onlyOwner {
+        renewers.add(renewer);
+    }
+
+    function isRenewer(address renewer) external view returns (bool) {
+        return renewers.has(renewer);
+    }
+
+    function removeRenewer(address renewer) external onlyOwner {
+        renewers.remove(renewer);
+    }
+
+    // Renovation
+    function renew (bytes32 label, uint time) external onlyRenewer {
+        uint256 tokenId = uint256(label);
+        require(expirationTime[tokenId] > now, "Name already expired");
+        uint newExpirationTime = expirationTime[tokenId].add(time);
+        expirationTime[tokenId] = newExpirationTime;
+        emit ExpirationChanged(tokenId, newExpirationTime);
     }
 
     // After expiration
