@@ -116,7 +116,11 @@ contract RSKOwner is ERC721, Ownable {
 
     // Renovation
     function renew (bytes32 label, uint time) external onlyRenewer {
-
+        uint256 tokenId = uint256(label);
+        require(expirationTime[tokenId] > now, "Name already expired");
+        uint newExpirationTime = expirationTime[tokenId].add(time);
+        expirationTime[tokenId] = newExpirationTime;
+        emit ExpirationChanged(tokenId, newExpirationTime);
     }
 
     // After expiration
