@@ -137,4 +137,13 @@ contract RSKOwner is ERC721, Ownable {
             }
         }
     }
+
+    // rsk admin
+    function setRootResolver (address resolver) external onlyOwner {
+        rns.setResolver(rootNode, resolver);
+    }
+
+    function setRootTTL (uint64 ttl) external onlyOwner {
+        rns.setTTL(rootNode, ttl);
+    }
 }
