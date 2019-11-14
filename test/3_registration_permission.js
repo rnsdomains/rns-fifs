@@ -20,7 +20,6 @@ contract('RSK Owner - registrar role', async (accounts) => {
 
     rskOwner = await RSKOwner.new(
       tokenRegistrar.address,
-      0,
       rns.address,
       rootNode,
     );

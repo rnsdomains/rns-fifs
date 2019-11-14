@@ -24,17 +24,13 @@ contract('FIFS Registrar', async (accounts) => {
     tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 
-    const migrationPeriod = web3.utils.toBN('1296000'); // 15 days
     rskOwner = await RSKOwner.new(
       tokenRegistrar.address,
-      migrationPeriod,
       rns.address,
       rootNode,
     );
 
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
-
-    await helpers.time.increase(1296001);
 
     namePrice = await NamePrice.new();
 

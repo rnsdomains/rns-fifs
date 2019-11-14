@@ -5,12 +5,12 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
 import "./testing/TokenDeed.sol";
 import "./testing/AbstractRNS.sol";
+import "./testing/TokenRegistrar.sol";
 
 contract RSKOwner is ERC721, Ownable {
     using Roles for Roles.Role;
 
-    uint public migrationDeadline = 0;
-    address private previousRegistrar;
+    TokenRegistrar private previousRegistrar;
     AbstractRNS private rns;
     bytes32 private rootNode;
 
@@ -22,7 +22,7 @@ contract RSKOwner is ERC721, Ownable {
     event ExpirationChanged(uint256 tokenId, uint expirationTime);
 
     modifier onlyPreviousRegistrar {
-        require(msg.sender == previousRegistrar, "Only previous registrar.");
+        require(msg.sender == address(previousRegistrar), "Only previous registrar.");
         _;
     }
 
@@ -36,19 +36,12 @@ contract RSKOwner is ERC721, Ownable {
         _;
     }
 
-    modifier registrationLive {
-        require(now >= migrationDeadline, "Registration not available.");
-        _;
-    }
-
     constructor (
-        address _previousRegistrar,
-        uint migrationTime,
+        TokenRegistrar _previousRegistrar,
         AbstractRNS _rns,
         bytes32 _rootNode
     ) public {
         previousRegistrar = _previousRegistrar;
-        migrationDeadline = now.add(migrationTime);
         rns = _rns;
         rootNode = _rootNode;
     }
@@ -59,7 +52,10 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     function available(uint256 tokenId) public view returns(bool) {
-        return expirationTime[tokenId] < now;
+        return (
+            expirationTime[tokenId] < now &&
+            previousRegistrar.state(bytes32(tokenId)) != TokenRegistrar.Mode.Owned
+        );
     }
 
     // Auction migration
@@ -84,7 +80,7 @@ contract RSKOwner is ERC721, Ownable {
     }
 
     // Registration
-    function register(bytes32 label, address tokenOwner, uint duration) external onlyRegistrar registrationLive {
+    function register(bytes32 label, address tokenOwner, uint duration) external onlyRegistrar {
         uint256 tokenId = uint256(label);
 
         require(available(tokenId), "Not available");
