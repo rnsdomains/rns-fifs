@@ -97,6 +97,12 @@ contract RSKOwner is ERC721, Ownable {
         rns.setSubnodeOwner(rootNode, label, tokenOwner);
     }
 
+    // Reclaim
+    function reclaim(uint256 id, address newOwner) external {
+        require(_isApprovedOrOwner(msg.sender, id), "Not approved or owner");
+        rns.setSubnodeOwner(rootNode, bytes32(id), newOwner);
+    }
+
     // Renewer role
     function addRenewer(address renewer) external onlyOwner {
         renewers.add(renewer);
