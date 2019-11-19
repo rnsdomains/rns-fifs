@@ -2,14 +2,16 @@ const RNS = artifacts.require('RNS');
 const RIF = artifacts.require('ERC677TokenContract');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
+const NamePrice = artifacts.require('NamePrice');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
+const BytesUtils = artifacts.require('BytesUtils');
 
 const namehash = require('eth-ens-namehash').hash;
 
 module.exports = (deployer, network, accounts) => {
   if (network == 'develop') {
     const POOL = accounts[1];
-    let rns, rif, tokenRegistrar, rskOwner;
+    let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar;
 
     const label = web3.utils.sha3('javiesses');
     const amount = web3.utils.toBN('1000000000000000000');
@@ -67,7 +69,7 @@ module.exports = (deployer, network, accounts) => {
       return tokenRegistrar.finalizeAuction(label)
     })
     .then(() => {
-      return deployer.deploy(RSKOwner, tokenRegistrar.address, web3.utils.toBN(1296000), rns.address, namehash('rsk'));
+      return deployer.deploy(RSKOwner, tokenRegistrar.address, rns.address, namehash('rsk'));
     })
     .then(_rskOwner => {
       rskOwner = _rskOwner;
@@ -76,10 +78,19 @@ module.exports = (deployer, network, accounts) => {
       return rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address)
     })
     .then(() => {
-      return deployer.deploy(FIFSRegistrar, rif.address, rskOwner.address, POOL);
+      return deployer.deploy(NamePrice)
     })
-    .then(fifsRegistrar => {
-      return rskOwner.addRegistrar(fifsRegistrar.address);
+    .then(_namePrice => {
+      namePrice = _namePrice;
     })
+    .then(() => {
+      return deployer.deploy(BytesUtils);
+    })
+    .then(() => {
+      return deployer.link(BytesUtils, FIFSRegistrar)
+    })
+    .then(() => {
+      return deployer.deploy(FIFSRegistrar, rif.address, rskOwner.address, POOL, namePrice.address);
+    });
   }
 }
