@@ -13,6 +13,8 @@ module.exports = (deployer, network, accounts) => {
     const POOL = accounts[1];
     let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar;
 
+    const devAddress = '0x2824B21e348d520a50cddfA77ba158822160DD94';
+
     const label = web3.utils.sha3('javiesses');
     const amount = web3.utils.toBN('1000000000000000000');
 
@@ -24,6 +26,9 @@ module.exports = (deployer, network, accounts) => {
     })
     .then(_rif => {
       rif = _rif;
+    })
+    .then(() => {
+      return rif.transfer(devAddress, web3.utils.toBN('100000000000000000000'));
     })
     .then(() => {
       return deployer.deploy(TokenRegistrar, rns.address, namehash('rsk'), rif.address);
@@ -38,7 +43,7 @@ module.exports = (deployer, network, accounts) => {
       return tokenRegistrar.startAuction(label);
     })
     .then(() => {
-      return rif.approve(tokenRegistrar.address, amount)
+      return rif.approve(tokenRegistrar.address, amount);
     })
     .then(() => {
       return tokenRegistrar.shaBid(label, accounts[0], amount, '0x00');
@@ -66,7 +71,10 @@ module.exports = (deployer, network, accounts) => {
       }, () => { });
     })
     .then(() => {
-      return tokenRegistrar.finalizeAuction(label)
+      return tokenRegistrar.finalizeAuction(label);
+    })
+    .then(() => {
+      return tokenRegistrar.transfer(label, devAddress);
     })
     .then(() => {
       return deployer.deploy(RSKOwner, tokenRegistrar.address, rns.address, namehash('rsk'));
@@ -75,10 +83,10 @@ module.exports = (deployer, network, accounts) => {
       rskOwner = _rskOwner;
     })
     .then(() => {
-      return rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address)
+      return rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
     })
     .then(() => {
-      return deployer.deploy(NamePrice)
+      return deployer.deploy(NamePrice);
     })
     .then(_namePrice => {
       namePrice = _namePrice;
@@ -87,10 +95,19 @@ module.exports = (deployer, network, accounts) => {
       return deployer.deploy(BytesUtils);
     })
     .then(() => {
-      return deployer.link(BytesUtils, FIFSRegistrar)
+      return deployer.link(BytesUtils, FIFSRegistrar);
     })
     .then(() => {
       return deployer.deploy(FIFSRegistrar, rif.address, rskOwner.address, POOL, namePrice.address);
+    })
+    .then(_fifsRegistrar => {
+      fifsRegistrar = _fifsRegistrar;
+    })
+    .then(() => {
+      return rskOwner.addRegistrar(fifsRegistrar.address);
+    })
+    .then(() => {
+      return web3.eth.sendTransaction({ from: accounts[0], to: devAddress, value: 1000000000000000000 });
     });
   }
 }
