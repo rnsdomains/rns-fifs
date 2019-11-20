@@ -174,6 +174,14 @@ module.exports = (deployer, network, accounts) => {
         POOL: accounts[0],
         MULTISIG: accounts[0],
       });
+    case 'mainnet':
+      return deployProd(deployer, {
+        RIF: '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5',
+        RNS: '0xcb868aeabd31e2b66f74e9a55cf064abb31a4ad5',
+        TOKEN_REGISTRAR: '0x5269f5bc51cdd8aa62755c97229b7eeddd8e69a6',
+        POOL: '0x39e00d2616e792f50ddd33bbe46e8bf55eadebee',
+        MULTISIG: '0x39e00d2616e792f50ddd33bbe46e8bf55eadebee',
+      });
     default:
       console.error('No migrations.');
       return deployer;

@@ -10,5 +10,10 @@ module.exports = {
       network_id: 31,
       gasPrice: 6000000000,
     },
+    testnet: {
+      provider: () => new HDWalletProvider(mnemonic, 'https://public-node.rsk.co'),
+      network_id: 30,
+      gasPrice: 60000000,
+    },
   },
 };
