@@ -155,7 +155,7 @@ function deployProd (deployer, { RIF, RNS, TOKEN_REGISTRAR, POOL, MULTISIG }) {
     return rskOwner.transferOwnership(MULTISIG);
   })
   .then(() => {
-    return rskOwner.transferOwnership(MULTISIG);
+    return fifsRegistrar.transferOwnership(MULTISIG);
   });
 
   // to activate execute
