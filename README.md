@@ -10,8 +10,8 @@ The registrar is separated into several components for simplicity, modularity, a
 
 Owner of _rsk_ top level domain. It can `setSubdomainOwner` in RNS.
 
-- It represents domain ownership implementing ERC-721c<sup>1</sup> non-fungible token standard. This standard provides basic functionality to track and transfer NFTs<sup>2</sup>.
-- Stores domains' expiration time. The expiration time determines wether a domain is owned or note.
+- It represents domain ownership implementing ERC-721<sup>1</sup> non-fungible token standard. This standard provides basic functionality to track and transfer NFTs<sup>2</sup>.
+- Stores domains' expiration time. The expiration time determines wether a domain is owned or not.
 - Determines if a domain is available to be purchased.
 - Accepts domain ownership clamming from previous _rsk_ registrar.
 - Grants access to other contracts for registering new domains (registrar role)<sup>2</sup>.
@@ -37,6 +37,7 @@ Has registration role in `RSK Owner`.
   - Change name price contract.
 
 The registration must be performed as follows:
+
 0. Calculate `makeCommitment` hash of the domain to be registered (off-chain).
 1. Commit the calculated hash using `commit`.
 2. Wait `minCommitmentAge` seconds.
