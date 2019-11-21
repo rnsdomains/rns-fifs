@@ -14,9 +14,6 @@ contract RSKOwner is ERC721, Ownable {
     AbstractRNS private rns;
     bytes32 private rootNode;
 
-    Roles.Role registrars;
-    Roles.Role renewers;
-
     mapping (uint256 => uint) public expirationTime;
 
     event ExpirationChanged(uint256 tokenId, uint expirationTime);
@@ -46,11 +43,18 @@ contract RSKOwner is ERC721, Ownable {
         rootNode = _rootNode;
     }
 
+    /// @notice Gets the owner of the specified domain.
+    /// @param tokenId keccak256 of the domain label.
+    /// @return domain owner.
     function ownerOf(uint256 tokenId) public view returns (address) {
         require(expirationTime[tokenId] > now, "ERC721: owner query for nonexistent token");
         return super.ownerOf(tokenId);
     }
 
+    /// @notice Check if a domain is available to be registered.
+    /// @dev The name must be registered via account with registrar role.
+    /// @param tokenId keccak256 of the domain label.
+    /// @return true if the specified domain can be registered.
     function available(uint256 tokenId) public view returns(bool) {
         return (
             expirationTime[tokenId] < now &&
@@ -58,7 +62,43 @@ contract RSKOwner is ERC721, Ownable {
         );
     }
 
-    // Auction migration
+    ///////////////////
+    // RSK TLD ADMIN //
+    ///////////////////
+
+    /*
+        This contract owns a node in RNS, so it is capable to
+        change it's resolution and ttl.
+    */
+
+    /// @notice set root node resolver in RNS.
+    /// @param resolver to be set.
+    function setRootResolver (address resolver) external onlyOwner {
+        rns.setResolver(rootNode, resolver);
+    }
+
+    /// @notice set root node ttl in RNS.
+    /// @param ttl to be set.
+    function setRootTTL (uint64 ttl) external onlyOwner {
+        rns.setTTL(rootNode, ttl);
+    }
+
+    ///////////////////////
+    // AUCTION MIGRATION //
+    ///////////////////////
+
+    /*
+        A domain registered with previous registrar (auction)
+        should be transfered before it can be renewed. If the
+        domain is not transfered and it expires, it might be
+        registered by someone else.
+    */
+
+    /// @notice Accept domain transfer from previous registrar.
+    /// @dev Use it via tokenRegistrar.trnasferRegistrars(label).
+    /// All locked tokens in Deed are returned.
+    /// @param label Accepted domain label.
+    /// @param deed Deed contract address holding tokens.
     function acceptRegistrarTransfer(bytes32 label, TokenDeed deed, uint) external onlyPreviousRegistrar {
         uint256 tokenId = uint256(label);
         expirationTime[tokenId] = deed.expirationDate();
@@ -66,20 +106,44 @@ contract RSKOwner is ERC721, Ownable {
         deed.closeDeed(1000);
     }
 
-    // Registrar role
+    //////////////////
+    // REGISTRATION //
+    //////////////////
+
+    /*
+        Only available domains can be registered. Once a domain is
+        registered, it cannot be revoked until expiration.
+    */
+
+    // An account with registrar role can register domains.
+    Roles.Role registrars;
+
+    /// @notice Give an account access to registrar role.
+    /// @dev Only owner.
+    /// @param registrar new registrar.
     function addRegistrar(address registrar) external onlyOwner {
         registrars.add(registrar);
     }
 
+    /// @notice Check if an account has registrar role.
+    /// @param registrar to query if has registrar role.
+    /// @return true if it has registrar role.
     function isRegistrar(address registrar) external view returns (bool) {
         return registrars.has(registrar);
     }
 
+    /// @notice Remove an account's access to registrar role.
+    /// @dev Only owner
+    /// @param registrar registrar to remove from registrar role.
     function removeRegistrar(address registrar) external onlyOwner {
         registrars.remove(registrar);
     }
 
-    // Registration
+    /// @notice Registers a domain in RNS for a given duration.
+    /// @dev Only accounts with registrar role.
+    /// @param label keccak256 of the domain label to register.
+    /// @param tokenOwner account that will own the registered domain.
+    /// @param duration time to register the domain for.
     function register(bytes32 label, address tokenOwner, uint duration) external onlyRegistrar {
         uint256 tokenId = uint256(label);
 
@@ -97,26 +161,62 @@ contract RSKOwner is ERC721, Ownable {
         rns.setSubnodeOwner(rootNode, label, tokenOwner);
     }
 
-    // Reclaim
-    function reclaim(uint256 id, address newOwner) external {
-        require(_isApprovedOrOwner(msg.sender, id), "Not approved or owner");
-        rns.setSubnodeOwner(rootNode, bytes32(id), newOwner);
+    ////////////////
+    // RECLAIMING //
+    ////////////////
+
+    /*
+        Names might be lost by transferring to contracts, or by
+        error. This allows any owner (or approved) to reclaim the
+        domain ownership in RNS.
+    */
+
+    /// @notice Reclaim ownership of a domain in RNS.
+    /// @dev Only owner or approved for the domain.
+    /// @param tokenId keccak256 of the domain
+    /// @param newOwner the owner to set in RNS.
+    function reclaim(uint256 tokenId, address newOwner) external {
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Not approved or owner");
+        rns.setSubnodeOwner(rootNode, bytes32(tokenId), newOwner);
     }
 
-    // Renewer role
+    ////////////////
+    // RENOVATION //
+    ////////////////
+
+    /*
+        Only owned domains can be renewed. A renovation extends
+        domain ownership.
+    */
+
+    // An account with renewer role can extend domain expirations.
+    Roles.Role renewers;
+
+    /// @notice Give an account access to renewer role.
+    /// @dev Only owner
+    /// @param renewer new renewer.
     function addRenewer(address renewer) external onlyOwner {
         renewers.add(renewer);
     }
 
+    /// @notice Check if an account has renewer role.
+    /// @param renewer to query if has renewer role.
+    /// @return true if it has renewer role.
     function isRenewer(address renewer) external view returns (bool) {
         return renewers.has(renewer);
     }
 
+    /// @notice Remove an account's access to renewer role.
+    /// @dev Only owner
+    /// @param renewer renewer to remove from renewer role.
     function removeRenewer(address renewer) external onlyOwner {
         renewers.remove(renewer);
     }
 
-    // Renovation
+    /// @notice Renew a domain for a given duraiton.
+    /// @dev Only accounts with renewer role.
+    /// @param label keccak256 of the domain label to renew.
+    /// @param time to extend the duration for.
     function renew (bytes32 label, uint time) external onlyRenewer {
         uint256 tokenId = uint256(label);
         require(expirationTime[tokenId] > now, "Name already expired");
@@ -125,7 +225,14 @@ contract RSKOwner is ERC721, Ownable {
         emit ExpirationChanged(tokenId, newExpirationTime);
     }
 
-    // After expiration
+    //////////////////////
+    // AFTER EXPIRATION //
+    //////////////////////
+
+    /// @notice This method removes expired domains.
+    /// @dev Use this to set 0 address in RNS ownership
+    /// and burn the domains to keep balance up to date.
+    /// @param tokenIds keccak256s of the domain labels to remove.
     function removeExpired(uint256[] calldata tokenIds) external {
         uint256 tokenId;
         bytes32 label;
@@ -142,14 +249,5 @@ contract RSKOwner is ERC721, Ownable {
                 rns.setSubnodeOwner(rootNode, label, address(0));
             }
         }
-    }
-
-    // rsk admin
-    function setRootResolver (address resolver) external onlyOwner {
-        rns.setResolver(rootNode, resolver);
-    }
-
-    function setRootTTL (uint64 ttl) external onlyOwner {
-        rns.setTTL(rootNode, ttl);
     }
 }
