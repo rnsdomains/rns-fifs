@@ -1,12 +1,12 @@
 pragma solidity ^0.5.3;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 import "./testing/ERC677TokenContract.sol";
-import "./RSKOwner.sol";
+import "./testing/ERC677Receiver.sol";
+import "./NodeOwner.sol";
 import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
-import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
-import "./testing/ERC677Receiver.sol";
 import "./BytesUtils.sol";
 
 /// @title First-in first-served registrar.
@@ -23,7 +23,7 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
     uint public minLength = 5;
 
     ERC677TokenContract rif;
-    RSKOwner rskOwner;
+    NodeOwner nodeOwner;
     address pool;
 
     // sha3('register(string,address,bytes32,uint)')
@@ -31,12 +31,12 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
 
     constructor (
         ERC677TokenContract _rif,
-        RSKOwner _rskOwner,
+        NodeOwner _nodeOwner,
         address _pool,
         AbstractNamePrice _namePrice
     ) public PricedContract(_namePrice) {
         rif = _rif;
-        rskOwner = _rskOwner;
+        nodeOwner = _nodeOwner;
         pool = _pool;
     }
 
@@ -154,9 +154,9 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
         require(canReveal(commitment), "No commitment found");
         commitmentRevealTime[commitment] = 0;
 
-        rskOwner.register(label, nameOwner, duration.mul(365 days));
+        nodeOwner.register(label, nameOwner, duration.mul(365 days));
 
-        return price(name, rskOwner.expirationTime(uint(label)), duration);
+        return price(name, nodeOwner.expirationTime(uint(label)), duration);
     }
 
     /////////////////////
