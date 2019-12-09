@@ -1,7 +1,6 @@
 const RNS = artifacts.require('RNS');
 const Token = artifacts.require('ERC677TokenContract');
-const TokenRegistrar = artifacts.require('TokenRegistrar');
-const RSKOwner = artifacts.require('RSKOwner');
+const NodeOwner = artifacts.require('NodeOwner');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
 const NamePrice = artifacts.require('NamePrice');
 const BytesUtils = artifacts.require('BytesUtils');
@@ -10,40 +9,37 @@ const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
-const getRegisterData = require('../utils').getRegisterData;
+const getRegisterData = require('../../utils').getRegisterData;
 
 contract('FIFS Registrar', async (accounts) => {
-  let rns, token, tokenRegistrar, rskOwner, fifsRegistrar, namePrice;
+  let rns, token, nodeOwner, fifsRegistrar, namePrice;
   const pool = accounts[6];
 
   beforeEach(async () => {
-    const rootNode = namehash('rsk');
+    const rootNode = namehash('tld');
 
     rns = await RNS.new();
     token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
-    tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
-    await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 
-    rskOwner = await RSKOwner.new(
-      tokenRegistrar.address,
+    nodeOwner = await NodeOwner.new(
       rns.address,
       rootNode,
     );
 
-    await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), rskOwner.address);
+    await rns.setSubnodeOwner('0x00', web3.utils.sha3('tld'), nodeOwner.address);
 
     namePrice = await NamePrice.new();
 
     const bytesUtils = await BytesUtils.new();
     await FIFSRegistrar.link('BytesUtils', bytesUtils.address);
 
-    fifsRegistrar = await FIFSRegistrar.new(token.address, rskOwner.address, pool, namePrice.address);
+    fifsRegistrar = await FIFSRegistrar.new(token.address, nodeOwner.address, pool, namePrice.address);
 
-    await rskOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
+    await nodeOwner.addRegistrar(fifsRegistrar.address, { from: accounts[0] });
   });
 
   it('should have deployer as owner', async () => {
-    const owner = await rskOwner.owner();
+    const owner = await nodeOwner.owner();
 
     expect(owner).to.eq(accounts[0]);
   });
@@ -583,7 +579,7 @@ contract('FIFS Registrar', async (accounts) => {
       }
 
       afterEach(async () => {
-        const expirationTime = await rskOwner.expirationTime(tokenId);
+        const expirationTime = await nodeOwner.expirationTime(tokenId);
         const now = await web3.eth.getBlock('latest').then(b => b.timestamp);
 
         expect(expirationTime).to.be.bignumber.eq(web3.utils.toBN(now).add(web3.utils.toBN('31536000').mul(duration)));
@@ -617,7 +613,7 @@ contract('FIFS Registrar', async (accounts) => {
 
       afterEach(async () =>
         expect(
-          await rskOwner.ownerOf(web3.utils.toBN(label))
+          await nodeOwner.ownerOf(web3.utils.toBN(label))
         ).to.eq(
           accounts[5]
         )
@@ -658,7 +654,7 @@ contract('FIFS Registrar', async (accounts) => {
       );
     });
 
-    describe('should register the name in rsk owner', async () => {
+    describe('should register the name in tld owner', async () => {
       const name = 'ilanolkies';
       const label = web3.utils.sha3(name);
       const tokenId = web3.utils.toBN(label);
@@ -690,10 +686,10 @@ contract('FIFS Registrar', async (accounts) => {
         .then(web3.utils.toBN)
         .then(n => n.add(duration.mul(web3.utils.toBN('31536000'))));
 
-        const rskOwnerEvents = await rskOwner.getPastEvents('allEvents');
+        const tldOwnerEvents = await nodeOwner.getPastEvents('allEvents');
 
         helpers.expectEvent.inLogs(
-          rskOwnerEvents,
+          tldOwnerEvents,
           'ExpirationChanged',
           {
             tokenId,
@@ -702,7 +698,7 @@ contract('FIFS Registrar', async (accounts) => {
         );
 
         helpers.expectEvent.inLogs(
-          rskOwnerEvents,
+          tldOwnerEvents,
           'Transfer',
           {
             from: helpers.constants.ZERO_ADDRESS,
@@ -859,7 +855,7 @@ contract('FIFS Registrar', async (accounts) => {
         await fifsRegistrar.register(name, owner, secret, duration);
 
         expect(
-          await rskOwner.ownerOf(web3.utils.toBN(label))
+          await nodeOwner.ownerOf(web3.utils.toBN(label))
         ).to.eq(owner);
       });
     });
