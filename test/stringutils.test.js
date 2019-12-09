@@ -3,7 +3,7 @@ const StringUtilsMock = artifacts.require('StringUtilsMock');
 const expect = require('chai').expect;
 require('@openzeppelin/test-helpers');
 
-contract('StringUtils', async () => {
+contract('String Utils', async () => {
   let stringUtilsMock;
 
   beforeEach(async () => {
