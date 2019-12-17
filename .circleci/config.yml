@@ -44,7 +44,7 @@ jobs:
                       echo "Waiting for RskJ..."
                       sleep 1
                     done
-                    npm test-regtest
+                    npm run test-regtest
 
       - store_test_results:
           path: ~/junit
