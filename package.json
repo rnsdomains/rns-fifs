@@ -16,6 +16,7 @@
     "rns"
   ],
   "scripts": {
+    "test-regtest": "truffle test --network rskRegtest",
     "test": "truffle test"
   },
   "author": "rnsdomains",
