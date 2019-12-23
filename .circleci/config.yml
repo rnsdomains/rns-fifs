@@ -39,6 +39,7 @@ jobs:
                     truffle test ./test/rskowner/rskowner_renewer_role.test.js
                     truffle test ./test/rskowner/rskowner_renovation.test.js
                     truffle test ./test/rskowner/rskowner_tldadmin.test.js
+                    truffle test ./test/renewer.test.js
                     truffle test ./test/bytesutils.test.js
                     truffle test ./test/nameprice.test.js
                     truffle test ./test/stringutils.test.js
