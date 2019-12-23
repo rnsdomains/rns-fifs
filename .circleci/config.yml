@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: Prepare Truffle
-          command: sudo npm install -g truffle
+          command: sudo npm install -g truffle@5.1.0
 
       - run:
           name: Install rns-fifs
