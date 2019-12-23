@@ -15,6 +15,11 @@ module.exports = {
       network_id: 31,
       gasPrice: 6000000000,
     },
+    rskRegtest: {
+      host: '127.0.0.1',
+      port: 4444,
+      network_id: 33,
+    },
     mainnet: {
       provider: () => new HDWalletProvider(mnemonic, 'https://public-node.rsk.co', 0, 1, true, `m/44'/137'/0'/0/`),
       network_id: 30,

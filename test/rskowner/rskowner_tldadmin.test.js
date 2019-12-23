@@ -7,7 +7,7 @@ const namehash = require('eth-ens-namehash').hash;
 const expect = require('chai').expect;
 const helpers = require('@openzeppelin/test-helpers');
 
-contract('RSK Owner - registrar interface', async (accounts) => {
+contract('RSK Owner - top level domain admin', async (accounts) => {
   let rns, token, tokenRegistrar, rskOwner;
 
   beforeEach(async () => {

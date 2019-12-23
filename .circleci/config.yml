@@ -10,14 +10,36 @@ jobs:
       - checkout
       - run:
           name: Prepare Truffle
-          command: sudo npm install -g truffle
+          command: sudo npm install -g truffle@5.1.0
 
       - run:
           name: Install rns-fifs
           command: |
                     cd ~/tpm/
-                    npm install  
+                    npm install
       - run:
           name: Run Truffle Tests
-          command: npm test
-
+          command: |
+                    truffle test ./test/fifs/fifs_registrar_rskowner.test.js
+                    truffle test ./test/fifs/fifs_registrar.test.js
+                    truffle test ./test/nodeowner/nodeowner_erc721.test.js
+                    truffle test ./test/nodeowner/nodeowner_reclaim.test.js
+                    truffle test ./test/nodeowner/nodeowner_registrar_role.test.js
+                    truffle test ./test/nodeowner/nodeowner_registration.test.js
+                    truffle test ./test/nodeowner/nodeowner_remove_expired.test.js
+                    truffle test ./test/nodeowner/nodeowner_renewer_role.test.js
+                    truffle test ./test/nodeowner/nodeowner_renovation.test.js
+                    truffle test ./test/nodeowner/nodeowner_tldadmin.test.js
+                    truffle test ./test/rskowner/rskowner_auction_migrations.test.js
+                    truffle test ./test/rskowner/rskowner_erc721.test.js
+                    truffle test ./test/rskowner/rskowner_reclaim.test.js
+                    truffle test ./test/rskowner/rskowner_registrar_role.test.js
+                    truffle test ./test/rskowner/rskowner_registration.test.js
+                    truffle test ./test/rskowner/rskowner_remove_expired.test.js
+                    truffle test ./test/rskowner/rskowner_renewer_role.test.js
+                    truffle test ./test/rskowner/rskowner_renovation.test.js
+                    truffle test ./test/rskowner/rskowner_tldadmin.test.js
+                    truffle test ./test/bytesutils.test.js
+                    truffle test ./test/nameprice.test.js
+                    truffle test ./test/stringutils.test.js
+                    truffle test ./test/utils.test.js
