@@ -30,7 +30,7 @@ jobs:
                     truffle test ./test/nodeowner/nodeowner_renewer_role.test.js
                     truffle test ./test/nodeowner/nodeowner_renovation.test.js
                     truffle test ./test/nodeowner/nodeowner_tldadmin.test.js
-                    truffle test ./test/rskowner/rskowner_auction_migration.test.js
+                    truffle test ./test/rskowner/rskowner_auction_migrations.test.js
                     truffle test ./test/rskowner/rskowner_erc721.test.js
                     truffle test ./test/rskowner/rskowner_reclaim.test.js
                     truffle test ./test/rskowner/rskowner_registrar_role.test.js
