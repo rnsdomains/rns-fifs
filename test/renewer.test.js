@@ -415,8 +415,11 @@ contract('Renewer', async accounts => {
     const amount = web3.utils.toBN('2000000000000000000');
     const baseDuration = web3.utils.toBN('1000');
 
+    let previousExpirationTime;
+
     beforeEach(async () => {
       await nodeOwner.register(label, owner, baseDuration);
+      previousExpirationTime = await nodeOwner.expirationTime(label);
     });
 
     it('approver + transfer', async () => {
@@ -430,13 +433,7 @@ contract('Renewer', async accounts => {
     });
 
     afterEach(async () => {
-      const expectedExpiration = await web3.eth.getBlock('latest')
-      .then(b => b.timestamp)
-      .then(web3.utils.toBN)
-      .then(n => n
-        .add(duration.mul(web3.utils.toBN('31536000')))
-        .add(baseDuration)
-      );
+      const expectedExpiration = previousExpirationTime.add(duration.mul(web3.utils.toBN('31536000')));
 
       const tldOwnerEvents = await nodeOwner.getPastEvents('allEvents');
 
@@ -481,7 +478,6 @@ contract('Renewer', async accounts => {
     const label = web3.utils.sha3(name);
     const owner = accounts[5];
     const duration = web3.utils.toBN('1');
-    const secret = '0x0000000000000000000000000000000000000000000000000000000000001234';
 
     const amount = web3.utils.toBN('8000000000000000000');
 
