@@ -1,29 +1,12 @@
 pragma solidity ^0.5.3;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
-import "@rsksmart/erc677/contracts/ERC677.sol";
-import "@rsksmart/erc677/contracts/ERC677TransferReceiver.sol";
-import "./NodeOwner.sol";
+import "./FIFSRegistrarBase.sol";
 import "./PricedContract.sol";
-import "./AbstractNamePrice.sol";
-import "./BytesUtils.sol";
 
 /// @title First-in first-served registrar.
 /// @notice You can use this contract to register .rsk names in RNS.
 /// @dev This contract has permission to register in RSK Owner.
-contract FIFSRegistrar is PricedContract, ERC677TransferReceiver {
-    using SafeMath for uint256;
-    using StringUtils for string;
-    using BytesUtils for bytes;
-
-    mapping (bytes32 => uint) private commitmentRevealTime;
-    uint public minCommitmentAge = 1 minutes;
-
-    uint public minLength = 5;
-
-    ERC677 rif;
-    NodeOwner nodeOwner;
+contract FIFSRegistrar is FIFSRegistrarBase, PricedContract {
     address pool;
 
     // sha3('register(string,address,bytes32,uint)')
@@ -34,57 +17,16 @@ contract FIFSRegistrar is PricedContract, ERC677TransferReceiver {
         NodeOwner _nodeOwner,
         address _pool,
         AbstractNamePrice _namePrice
-    ) public PricedContract(_namePrice) {
-        rif = _rif;
-        nodeOwner = _nodeOwner;
+    ) public FIFSRegistrarBase(_rif, _nodeOwner) PricedContract(_namePrice) {
         pool = _pool;
     }
 
-    ///////////////////
-    // COMMIT-REVEAL //
-    ///////////////////
-
     /*
-        0. Caclulate makeCommitment hash of the domain to be registered (off-chain)
-        1. Commit the calculated hash
-        2. Wait minCommitmentAge
         3. Execute registration via:
             - ERC-20 with approve() + register()
             - ERC-677 with transferAndCall()
-            The price of a domain is given by name price contract.
+        The price of a domain is given by name price contract.
     */
-
-    // 0.
-    /// @notice Create a commitment for register action.
-    /// @dev Don't use this method on-chain when commiting.
-    /// @param label keccak256 of the name to be registered.
-    /// @param nameOwner Owner of the name to be registered.
-    /// @param secret Secret to protect the name to be registered.
-    /// @return The commitment hash.
-    function makeCommitment (bytes32 label, address nameOwner, bytes32 secret) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(label, nameOwner, secret));
-    }
-
-    // 1.
-    /// @notice Commit before registring a name.
-    /// @dev A valid commitment can be calculated using makeCommitment off-chain.
-    /// @param commitment A valid commitment hash.
-    function commit(bytes32 commitment) external {
-        require(commitmentRevealTime[commitment] < 1, "Existent commitment");
-        commitmentRevealTime[commitment] = now.add(minCommitmentAge);
-    }
-
-    // 2.
-    /// @notice Ensure the commitment is ready to be revealed.
-    /// @dev This method can be polled to ensure registration.
-    /// @param commitment Commitment to be queried.
-    /// @return Wether the commitment can be revealed or not.
-    function canReveal(bytes32 commitment) public view returns (bool) {
-        uint revealTime = commitmentRevealTime[commitment];
-        return 0 < revealTime && revealTime <= now;
-    }
-
-    // 3.
 
     // - Via ERC-20
     /// @notice Registers a .rsk name in RNS.
@@ -157,23 +99,5 @@ contract FIFSRegistrar is PricedContract, ERC677TransferReceiver {
         nodeOwner.register(label, nameOwner, duration.mul(365 days));
 
         return price(name, nodeOwner.expirationTime(uint(label)), duration);
-    }
-
-    /////////////////////
-    // REGISTRAR ADMIN //
-    /////////////////////
-
-    /// @notice Change required commitment maturity.
-    /// @dev Only owner.
-    /// @param newMinCommitmentAge The new maturity required.
-    function setMinCommitmentAge (uint newMinCommitmentAge) external onlyOwner {
-        minCommitmentAge = newMinCommitmentAge;
-    }
-
-    /// @notice Change disbaled names.
-    /// @dev Only owner.
-    /// @param newMinLength The new minimum length enabled.
-    function setMinLength (uint newMinLength) external onlyOwner {
-        minLength = newMinLength;
     }
 }
