@@ -19,4 +19,18 @@ describe('utils', () => {
 
     expect(actual).to.eq(expected);
   });
+
+  it('should parse renew data', async () => {
+    const name = 'ilanolkies';
+    const duration = web3.utils.toBN('1');
+
+    const expected =
+      web3.utils.sha3('renew(string,uint)').slice(0, 10) + // signature 4b
+      '0000000000000000000000000000000000000000000000000000000000000001' + // duration 32b - offset 4b
+      '696c616e6f6c6b696573'; // name - offset 24b
+
+    const actual = utils.getRenewData(name, duration);
+
+    expect(actual).to.eq(expected);
+  });
 });

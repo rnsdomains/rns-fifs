@@ -5,6 +5,7 @@ const RSKOwner = artifacts.require('RSKOwner');
 const NamePrice = artifacts.require('NamePrice');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
 const BytesUtils = artifacts.require('BytesUtils');
+const Renewer = artifacts.require('Renewer');
 
 const namehash = require('eth-ens-namehash').hash;
 
@@ -20,7 +21,7 @@ const namehash = require('eth-ens-namehash').hash;
  */
 function deployDev (deployer, accounts) {
   const POOL = accounts[1];
-  let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar;
+  let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar, renewer;
 
   const devAddress = '0x2824b21e348d520a50cddfa77ba158822160dd94';
 
@@ -114,6 +115,18 @@ function deployDev (deployer, accounts) {
   })
   .then(() => {
     return rskOwner.addRegistrar(fifsRegistrar.address);
+  })
+  .then(() => {
+    return deployer.link(BytesUtils, Renewer);
+  })
+  .then(() => {
+    return deployer.deploy(Renewer, rif.address, rskOwner.address, POOL, namePrice.address);
+  })
+  .then(_renewer => {
+    renewer = _renewer;
+  })
+  .then(() => {
+    return rskOwner.addRenewer(renewer.address);
   })
   .then(() => {
     return web3.eth.sendTransaction({ from: accounts[0], to: devAddress, value: 1000000000000000000 });

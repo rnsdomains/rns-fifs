@@ -20,7 +20,7 @@ function utf8ToHexString (string) {
  * @param {BN} duration to register in years
  */
 function getRegisterData (name, owner, secret, duration) {
-  // 0x + 8 bytes
+  // 0x + 4 bytes
   const _signature = '0xc2c414c8';
 
   // 20 bytes
@@ -42,6 +42,20 @@ function getRegisterData (name, owner, secret, duration) {
   return `${_signature}${_owner}${_secret}${_duration}${_name}`;
 };
 
+function getRenewData (name, duration) {
+  // 0x + 4 bytes
+  const _signature = '0x14b1a4fc';
+
+  // 32 bytes
+  _duration = numberToUint32(duration);
+
+  // variable length
+  const _name = utf8ToHexString(name);
+
+  return `${_signature}${_duration}${_name}`;
+}
+
 module.exports = {
   getRegisterData,
+  getRenewData,
 };
