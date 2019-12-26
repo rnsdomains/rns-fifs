@@ -2,8 +2,8 @@ pragma solidity ^0.5.3;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
-import "./testing/ERC677TokenContract.sol";
-import "./testing/ERC677Receiver.sol";
+import "@rsksmart/erc677/contracts/ERC677.sol";
+import "@rsksmart/erc677/contracts/ERC677TransferReceiver.sol";
 import "./NodeOwner.sol";
 import "./AbstractNamePrice.sol";
 import "./BytesUtils.sol";
@@ -13,7 +13,7 @@ import "./BytesUtils.sol";
 /// @notice This is an abstract contract. A Registrar can inherit from
 /// this contract to implement basic commit-reveal and admin functionality.
 /// @dev Inherited contract should have registrar permission in Node Owner.
-contract FIFSRegistrarBase is ERC677Receiver, Ownable {
+contract FIFSRegistrarBase is ERC677TransferReceiver, Ownable {
     using SafeMath for uint256;
     using StringUtils for string;
     using BytesUtils for bytes;
@@ -23,11 +23,11 @@ contract FIFSRegistrarBase is ERC677Receiver, Ownable {
 
     uint public minLength = 5;
 
-    ERC677TokenContract rif;
+    ERC677 rif;
     NodeOwner nodeOwner;
 
     constructor (
-        ERC677TokenContract _rif,
+        ERC677 _rif,
         NodeOwner _nodeOwner
     ) public {
         rif = _rif;
