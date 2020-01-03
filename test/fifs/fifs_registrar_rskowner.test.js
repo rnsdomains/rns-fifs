@@ -1,5 +1,5 @@
 const RNS = artifacts.require('RNS');
-const Token = artifacts.require('ERC677TokenContract');
+const Token = artifacts.require('ERC677');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
@@ -20,7 +20,7 @@ contract('FIFS Registrar - RSK Owner', async (accounts) => {
     const rootNode = namehash('rsk');
 
     rns = await RNS.new();
-    token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
+    token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'), 'RIFOS', 'RIF', web3.utils.toBN('18'));
     tokenRegistrar = await TokenRegistrar.new(rns.address, rootNode, token.address);
     await rns.setSubnodeOwner('0x00', web3.utils.sha3('rsk'), tokenRegistrar.address);
 

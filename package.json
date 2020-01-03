@@ -28,6 +28,9 @@
   "dependencies": {
     "@ensdomains/ethregistrar": "1.2.2",
     "@openzeppelin/contracts": "^2.3.0",
+    "@rsksmart/erc677": "^1.0.1",
+    "@rsksmart/rns-auction-registrar": "^1.0.1",
+    "@rsksmart/rns-registry": "^1.0.0",
     "@truffle/hdwallet-provider": "^1.0.25"
   },
   "devDependencies": {

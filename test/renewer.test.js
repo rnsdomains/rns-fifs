@@ -1,5 +1,5 @@
 const RNS = artifacts.require('RNS');
-const Token = artifacts.require('ERC677TokenContract');
+const Token = artifacts.require('ERC677');
 const NodeOwner = artifacts.require('NodeOwner');
 const Renewer = artifacts.require('Renewer');
 const NamePrice = artifacts.require('NamePrice');
@@ -19,7 +19,7 @@ contract('Renewer', async accounts => {
     const rootNode = namehash('tld');
 
     rns = await RNS.new();
-    token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'));
+    token = await Token.new(accounts[0], web3.utils.toBN('1000000000000000000000'), 'RIFOS', 'RIF', web3.utils.toBN('18'));
 
     nodeOwner = await NodeOwner.new(
       rns.address,

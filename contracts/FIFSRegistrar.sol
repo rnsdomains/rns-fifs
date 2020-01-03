@@ -2,8 +2,8 @@ pragma solidity ^0.5.3;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
-import "./testing/ERC677TokenContract.sol";
-import "./testing/ERC677Receiver.sol";
+import "@rsksmart/erc677/contracts/ERC677.sol";
+import "@rsksmart/erc677/contracts/ERC677TransferReceiver.sol";
 import "./NodeOwner.sol";
 import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
@@ -12,7 +12,7 @@ import "./BytesUtils.sol";
 /// @title First-in first-served registrar.
 /// @notice You can use this contract to register .rsk names in RNS.
 /// @dev This contract has permission to register in RSK Owner.
-contract FIFSRegistrar is PricedContract, ERC677Receiver {
+contract FIFSRegistrar is PricedContract, ERC677TransferReceiver {
     using SafeMath for uint256;
     using StringUtils for string;
     using BytesUtils for bytes;
@@ -22,7 +22,7 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
 
     uint public minLength = 5;
 
-    ERC677TokenContract rif;
+    ERC677 rif;
     NodeOwner nodeOwner;
     address pool;
 
@@ -30,7 +30,7 @@ contract FIFSRegistrar is PricedContract, ERC677Receiver {
     bytes4 constant REGISTER_SIGNATURE = 0xc2c414c8;
 
     constructor (
-        ERC677TokenContract _rif,
+        ERC677 _rif,
         NodeOwner _nodeOwner,
         address _pool,
         AbstractNamePrice _namePrice
