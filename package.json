@@ -1,11 +1,11 @@
 {
-  "name": "rns-fifs",
-  "description": "First-in first-served registrar for rsk top level domain.",
-  "version": "1.0.0",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
+  "name": "@rsksmart/rns-rskregistrar",
+  "description": "Registrar for rsk top level domain.",
+  "version": "1.1.1",
+  "files": [
+    "/contracts",
+    "!/contracts/Migrations.sol"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rnsdomains/rns-fifs.git"
@@ -28,6 +28,9 @@
   "dependencies": {
     "@ensdomains/ethregistrar": "1.2.2",
     "@openzeppelin/contracts": "^2.3.0",
+    "@rsksmart/erc677": "^1.0.1",
+    "@rsksmart/rns-auction-registrar": "^1.0.1",
+    "@rsksmart/rns-registry": "^1.0.0",
     "@truffle/hdwallet-provider": "^1.0.25"
   },
   "devDependencies": {

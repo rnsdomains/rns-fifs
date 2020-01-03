@@ -1,7 +1,7 @@
 pragma solidity ^0.5.3;
 
-import "./AbstractNamePrice.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./AbstractNamePrice.sol";
 
 /// @title NamePrice contract
 /// @author Javier Esses

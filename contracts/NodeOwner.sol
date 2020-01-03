@@ -3,7 +3,7 @@ pragma solidity ^0.5.3;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
-import "./testing/AbstractRNS.sol";
+import "@rsksmart/rns-registry/contracts/AbstractRNS.sol";
 
 contract NodeOwner is ERC721, Ownable {
     using Roles for Roles.Role;

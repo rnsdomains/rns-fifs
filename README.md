@@ -95,6 +95,12 @@ slither .
 > Get truffle: https://www.trufflesuite.com/
 > Get slither:https://github.com/crytic/slither
 
+## Import contracts
+
+```
+npm i @rsksmart/rns-rskregistrar
+```
+
 ## References
 
 1. Strongly based on https://github.com/ensdomains/ethregistrar.

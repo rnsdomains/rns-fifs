@@ -1,7 +1,7 @@
 pragma solidity ^0.5.3;
 
-import "./AbstractNamePrice.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "./AbstractNamePrice.sol";
 
 contract PricedContract is Ownable {
     AbstractNamePrice public namePrice;

@@ -1,5 +1,5 @@
 const RNS = artifacts.require('RNS');
-const RIF = artifacts.require('ERC677TokenContract');
+const RIF = artifacts.require('ERC677');
 const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
 const NamePrice = artifacts.require('NamePrice');

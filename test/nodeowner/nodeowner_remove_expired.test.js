@@ -1,5 +1,4 @@
 const RNS = artifacts.require('RNS');
-const Token = artifacts.require('ERC677TokenContract');
 const NodeOwner = artifacts.require('NodeOwner');
 
 const namehash = require('eth-ens-namehash').hash;
