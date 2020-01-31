@@ -22,6 +22,7 @@ jobs:
           command: |
                     truffle test ./test/fifs/fifs_registrar_rskowner.test.js
                     truffle test ./test/fifs/fifs_registrar.test.js
+                    truffle test ./test/fifs/fifs_addr_registrar.test.js
                     truffle test ./test/nodeowner/nodeowner_erc721.test.js
                     truffle test ./test/nodeowner/nodeowner_reclaim.test.js
                     truffle test ./test/nodeowner/nodeowner_registrar_role.test.js
