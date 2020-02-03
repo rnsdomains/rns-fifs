@@ -4,6 +4,7 @@ const TokenRegistrar = artifacts.require('TokenRegistrar');
 const RSKOwner = artifacts.require('RSKOwner');
 const NamePrice = artifacts.require('NamePrice');
 const FIFSRegistrar = artifacts.require('FIFSRegistrar');
+const FIFSAddrRegistrar = artifacts.require('FIFSAddrRegistrar');
 const BytesUtils = artifacts.require('BytesUtils');
 const Renewer = artifacts.require('Renewer');
 
@@ -21,9 +22,11 @@ const namehash = require('eth-ens-namehash').hash;
  */
 function deployDev (deployer, accounts) {
   const POOL = accounts[1];
-  let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar, renewer;
+  let rns, rif, tokenRegistrar, rskOwner, namePrice, fifsRegistrar, fifsAddrRegistrar, renewer;
 
   const devAddress = '0x2824b21e348d520a50cddfa77ba158822160dd94';
+
+  const rootNode = namehash('rsk');
 
   const label = web3.utils.sha3('javiesses');
   const amount = web3.utils.toBN('1000000000000000000');
@@ -32,7 +35,7 @@ function deployDev (deployer, accounts) {
     rns = _rns;
   })
   .then(() => {
-    return deployer.deploy(RIF, accounts[0], web3.utils.toBN('1000000000000000000000'));
+    return deployer.deploy(RIF, accounts[0], web3.utils.toBN('1000000000000000000000'), 'RIFOS', 'RIF', web3.utils.toBN('18'));
   })
   .then(_rif => {
     rif = _rif;
@@ -41,7 +44,7 @@ function deployDev (deployer, accounts) {
     return rif.transfer(devAddress, web3.utils.toBN('100000000000000000000'));
   })
   .then(() => {
-    return deployer.deploy(TokenRegistrar, rns.address, namehash('rsk'), rif.address);
+    return deployer.deploy(TokenRegistrar, rns.address, rootNode, rif.address);
   })
   .then(_tokenRegistrar => {
     tokenRegistrar = _tokenRegistrar;
@@ -87,7 +90,7 @@ function deployDev (deployer, accounts) {
     return tokenRegistrar.transfer(label, devAddress);
   })
   .then(() => {
-    return deployer.deploy(RSKOwner, tokenRegistrar.address, rns.address, namehash('rsk'));
+    return deployer.deploy(RSKOwner, tokenRegistrar.address, rns.address, rootNode);
   })
   .then(_rskOwner => {
     rskOwner = _rskOwner;
@@ -108,6 +111,9 @@ function deployDev (deployer, accounts) {
     return deployer.link(BytesUtils, FIFSRegistrar);
   })
   .then(() => {
+    return deployer.link(BytesUtils, FIFSAddrRegistrar);
+  })
+  .then(() => {
     return deployer.deploy(FIFSRegistrar, rif.address, rskOwner.address, POOL, namePrice.address);
   })
   .then(_fifsRegistrar => {
@@ -115,6 +121,15 @@ function deployDev (deployer, accounts) {
   })
   .then(() => {
     return rskOwner.addRegistrar(fifsRegistrar.address);
+  })
+  .then(() => {
+    return deployer.deploy(FIFSAddrRegistrar, rif.address, rskOwner.address, POOL, namePrice.address, rns.address, rootNode);
+  })
+  .then(_fifsAddrRegistrar => {
+    fifsAddrRegistrar = _fifsAddrRegistrar;
+  })
+  .then(() => {
+    return rskOwner.addRegistrar(fifsAddrRegistrar.address);
   })
   .then(() => {
     return deployer.link(BytesUtils, Renewer);
