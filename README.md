@@ -23,6 +23,7 @@ Owner of _rsk_ top level domain. It can `setSubdomainOwner` in RNS.
   - Add/remove renewer contracts.
 
 MainNet: [0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1](https://explorer.rsk.co/address/0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1)
+
 TestNet: [0xca0a477e19bac7e0e172ccfd2e3c28a7200bdb71](https://explorer.testnet.rsk.co/address/0xca0a477e19bac7e0e172ccfd2e3c28a7200bdb71)
 
 ### FIFS Registrar
@@ -46,10 +47,25 @@ The registration must be performed as follows:
 2. Wait `minCommitmentAge` seconds.
 3. Execute registration via ERC-20 (with approval) or ERC-677.
 
-> Find `transferAndCall()` encoder in `utils/index.js`
+> Find `transferAndCall()` encoder in `utils/index.js`, `getRegisterData`
 
 MainNet: [0x779195c53cc7c1a33bd2eea5f63f2c1da8798d61](https://explorer.rsk.co/address/0x779195c53cc7c1a33bd2eea5f63f2c1da8798d61)
+
 TestNet: [0x36ffda909f941950a552011f2c50569fda14a169](https://explorer.testnet.rsk.co/address/0x36ffda909f941950a552011f2c50569fda14a169)
+
+### FIFS Addr Registrar
+
+Has registration role in `RSK Owner`.
+
+- Adds an extra functionality to FIFS Registrar: set address resolution in registration transaction.
+
+The registration must be performed following FIFS Registrar steps, adding address resolution in the last step.
+
+> Find `transferAndCall()` encoder in `utils/index.js`, `getAddrRegisterData`
+
+MainNet: [0xd9c79ced86ecf49f5e4a973594634c83197c35ab](https://explorer.rsk.co/address/0xd9c79ced86ecf49f5e4a973594634c83197c35ab)
+
+TestNet: [0x90734bd6bf96250a7b262e2bc34284b0d47c1e8d](https://explorer.testnet.rsk.co/address/0x90734bd6bf96250a7b262e2bc34284b0d47c1e8d)
 
 ### Name Price
 
@@ -64,6 +80,7 @@ Determines the price of a domain.
 > For example, 5 years cost 7 RIF.
 
 MainNet: [0xd09adf13e482928e47e96dd6f02aad1daf7a5a47](https://explorer.rsk.co/address/0x779195c53cc7c1a33bd2eea5f63f2c1da8798d61)
+
 TestNet: [0x794f99f1a9382ba88b453ddb4bfa00acae8d50e8](https://explorer.testnet.rsk.co/address/0x36ffda909f941950a552011f2c50569fda14a169)
 
 ### Renewer
@@ -77,6 +94,7 @@ Has renewer role in `RSK Owner`.
 - It has an owner that can<sup>2</sup> change name price contract.
 
 MainNet: [0x7a9872a7615c475b62a62b8f6e491077fb05f663](https://explorer.rsk.co/address/0x7a9872a7615c475b62a62b8f6e491077fb05f663)
+
 TestNet: [0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b](https://explorer.testnet.rsk.co/address/0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b)
 
 ## Setup
