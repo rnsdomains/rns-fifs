@@ -1,10 +1,14 @@
 const BytesUtils = artifacts.require('BytesUtils');
 const FIFSAddrRegistrar = artifacts.require('FIFSAddrRegistrar');
+const RSKOwner = artifacts.require('RSKOwner');
 const namehash = require('eth-ens-namehash').hash;
 
 module.exports = (deployer, network, accounts) => {
   if (network === 'testnet') {
     BytesUtils.address = '0x7faf084ef72cb71f3383a5c568c70853ac4c298e';
+
+    let fifsAddrRegsitrar;
+
     deployer.link(BytesUtils, FIFSAddrRegistrar).then(() => {
       return deployer.deploy(
         FIFSAddrRegistrar,
@@ -14,7 +18,12 @@ module.exports = (deployer, network, accounts) => {
         '0x794f99f1a9382ba88b453ddb4bfa00acae8d50e8', // name price
         '0x7d284aaac6e925aad802a53c0c69efe3764597b8', // rns
         namehash('rsk'), // root node
-      );
+      ).then(_fifsAddrRegistrar => {
+        fifsAddrRegsitrar = _fifsAddrRegistrar;
+        return RSKOwner.at('0xca0a477e19bac7e0e172ccfd2e3c28a7200bdb71')
+      }).then(rskOwner => {
+        return rskOwner.addRegistrar(fifsAddrRegsitrar.address);
+      });
     });
   } else if (network === 'mainnet') {
     BytesUtils.address = '0xe9e32c20cbce0ad4f16377bd9a84554828e86a06';
