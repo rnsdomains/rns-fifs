@@ -2,3 +2,9 @@ build/
 node_modules/
 .DS_Store
 .secret
+RSKOwner.json
+NamePrice.json
+FIFSRegistrar.json
+Renewer.json
+FIFSAddrRegistrar.json
+BytesUtils.json
