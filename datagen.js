@@ -13,7 +13,7 @@ const rskOwnerData = {
   },
 };
 
-fs.writeFileSync('./RSKOwner.json', JSON.stringify(rskOwnerData));
+fs.writeFileSync('./RSKOwnerData.json', JSON.stringify(rskOwnerData));
 
 const namePriceBuild = require('./build/contracts/NamePrice');
 
@@ -26,7 +26,7 @@ const namePriceData = {
   },
 };
 
-fs.writeFileSync('./NamePrice.json', JSON.stringify(namePriceData));
+fs.writeFileSync('./NamePriceData.json', JSON.stringify(namePriceData));
 
 const fifsRegistrarBuild = require('./build/contracts/FIFSRegistrar');
 
@@ -39,7 +39,7 @@ const fifsRegistrarData = {
   },
 };
 
-fs.writeFileSync('./FIFSRegistrar.json', JSON.stringify(fifsRegistrarData));
+fs.writeFileSync('./FIFSRegistrarData.json', JSON.stringify(fifsRegistrarData));
 
 const fifsAddrRegistrarBuild = require('./build/contracts/FIFSAddrRegistrar');
 
@@ -52,7 +52,7 @@ const fifsAddrRegistrarData = {
   },
 };
 
-fs.writeFileSync('./FIFSAddrRegistrar.json', JSON.stringify(fifsAddrRegistrarData));
+fs.writeFileSync('./FIFSAddrRegistrarData.json', JSON.stringify(fifsAddrRegistrarData));
 
 const renewerBuild = require('./build/contracts/Renewer');
 
@@ -65,7 +65,7 @@ const renewerData = {
   },
 };
 
-fs.writeFileSync('./Renewer.json', JSON.stringify(renewerData));
+fs.writeFileSync('./RenewerData.json', JSON.stringify(renewerData));
 
 const bytesUtilsBuild = require('./build/contracts/BytesUtils');
 
@@ -78,4 +78,4 @@ const bytesUtilsData = {
   },
 };
 
-fs.writeFileSync('./BytesUtils.json', JSON.stringify(bytesUtilsData));
+fs.writeFileSync('./BytesUtilsData.json', JSON.stringify(bytesUtilsData));
