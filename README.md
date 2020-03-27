@@ -101,7 +101,7 @@ TestNet: [0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b](https://explorer.testnet.r
 
 ```js
 const Web3 = require('web3');
-const FIFSRegistrarData = require('@rsksmart/rns-resolver/FIFSRegistrarData.json');
+const FIFSRegistrarData = require('@rsksmart/rns-rskregistrar/FIFSRegistrarData.json');
 const web3 = new Web3('https://public-node.rsk.co')
 const FIFSRegistrar = new web3.eth.Contract(FIFSRegistrarData.abi, FIFSRegistrarData.address.rskMainnet);
 ```
@@ -120,8 +120,8 @@ You can use them as follow:
 
 ```typescript
 import Web3 from 'web3'
-import FIFSRegistrar from '@rsksmart/rns-resolver/types/web3-v1-contracts/FIFSRegistrarData.d.ts'
-import FIFSRegistrarData from '@rsksmart/rns-resolver/FIFSRegistrarData.json'
+import FIFSRegistrar from '@rsksmart/rns-rskregistrar/types/web3-v1-contracts/FIFSRegistrarData.d.ts'
+import FIFSRegistrarData from '@rsksmart/rns-rskregistrar/FIFSRegistrarData.json'
 const web3 = new Web3('https://public-node.rsk.co')
 const registrar = new web3.eth.Contract(FIFSRegistrarData.abi, FIFSRegistrarData.address.rskMainnet) as FIFSRegistrar
 ```
