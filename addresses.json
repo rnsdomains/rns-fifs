@@ -1,0 +1,26 @@
+{
+  "RSKOwner": {
+    "rskMainnet": "0x45d3e4fb311982a06ba52359d44cb4f5980e0ef1",
+    "rskTestnet": "0xca0a477e19bac7e0e172ccfd2e3c28a7200bdb71"
+  },
+  "NamePrice": {
+    "rskMainnet": "0xd09adf13e482928e47e96dd6f02aad1daf7a5a47",
+    "rskTestnet": "0x794f99f1a9382ba88b453ddb4bfa00acae8d50e8"
+  },
+  "FIFSRegistrar": {
+    "rskMainnet": "0x779195c53cc7c1a33bd2eea5f63f2c1da8798d61",
+    "rskTestnet": "0x36ffda909f941950a552011f2c50569fda14a169"
+  },
+  "Renewer": {
+    "rskMainnet": "0x7a9872a7615c475b62a62b8f6e491077fb05f663",
+    "rskTestnet": "0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b"
+  },
+  "FIFSAddrRegistrar": {
+    "rskMainnet": "0xd9c79ced86ecf49f5e4a973594634c83197c35ab",
+    "rskTestnet": "0x90734bd6bf96250a7b262e2bc34284b0d47c1e8d"
+  },
+  "BytesUtils": {
+    "rskMainnet": "0xe9e32c20cbce0ad4f16377bd9a84554828e86a06",
+    "rskTestnet": "0x7faf084ef72cb71f3383a5c568c70853ac4c298e"
+  }
+}

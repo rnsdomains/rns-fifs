@@ -1,10 +1,17 @@
 {
   "name": "@rsksmart/rns-rskregistrar",
   "description": "Registrar for rsk top level domain.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "files": [
     "/contracts",
-    "!/contracts/Migrations.sol"
+    "!/contracts/Migrations.sol",
+    "/RSKOwnerData.json",
+    "/NamePriceData.json",
+    "/FIFSRegistrarData.json",
+    "/RenewerData.json",
+    "/FIFSAddrRegistrarData.json",
+    "/BytesUtilsData.json",
+    "/types"
   ],
   "repository": {
     "type": "git",
@@ -17,7 +24,9 @@
   ],
   "scripts": {
     "test-regtest": "truffle test --network rskRegtest",
-    "test": "truffle test"
+    "test": "truffle test",
+    "prepublish": "npx truffle compile && node ./datagen.js && npm run types-generation",
+    "types-generation": "typechain --target=web3-v1 '*Data.json' && typechain --target=web3-v2 '*Data.json' && typechain --target=truffle '*Data.json' && typechain --target=ethers '*Data.json'"
   },
   "author": "rnsdomains",
   "license": "ISC",
@@ -32,12 +41,18 @@
     "@rsksmart/rns-auction-registrar": "^1.0.1",
     "@rsksmart/rns-registry": "^1.0.0",
     "@rsksmart/rns-resolver": "^1.0.1",
-    "@truffle/hdwallet-provider": "^1.0.25"
+    "@truffle/hdwallet-provider": "^1.0.33"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.1",
     "chai": "^4.2.0",
     "eth-ens-namehash": "^2.0.8",
-    "mem": ">=4.0.0"
+    "mem": ">=4.0.0",
+    "truffle": "^5.1.18",
+    "typechain": "^1.0.5",
+    "typechain-target-ethers": "^1.0.4",
+    "typechain-target-truffle": "^1.0.2",
+    "typechain-target-web3-v1": "^1.0.4",
+    "typechain-target-web3-v2": "^1.0.0"
   }
 }

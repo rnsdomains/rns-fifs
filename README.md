@@ -97,6 +97,37 @@ MainNet: [0x7a9872a7615c475b62a62b8f6e491077fb05f663](https://explorer.rsk.co/ad
 
 TestNet: [0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b](https://explorer.testnet.rsk.co/address/0xe48ad1d5fbf61394b5a7d81ab2f36736a046657b)
 
+## JS
+
+```js
+const Web3 = require('web3');
+const FIFSRegistrarData = require('@rsksmart/rns-rskregistrar/FIFSRegistrarData.json');
+const web3 = new Web3('https://public-node.rsk.co')
+const FIFSRegistrar = new web3.eth.Contract(FIFSRegistrarData.abi, FIFSRegistrarData.address.rskMainnet);
+```
+
+## Types
+
+There are TypeScript typing definitions of the contracts published together with the original contracts. 
+Supported contract's libraries are: 
+
+* `web3` version 1.* - `web3-v1-contracts`
+* `web3` version 2.* - `web3-v2-contracts`
+* `truffle` - `truffle-contracts`
+* `ethers` - `ethers-contracts`
+
+You can use them as follow:
+
+```typescript
+import Web3 from 'web3'
+import FIFSRegistrar from '@rsksmart/rns-rskregistrar/types/web3-v1-contracts/FIFSRegistrarData.d.ts'
+import FIFSRegistrarData from '@rsksmart/rns-rskregistrar/FIFSRegistrarData.json'
+const web3 = new Web3('https://public-node.rsk.co')
+const registrar = new web3.eth.Contract(FIFSRegistrarData.abi, FIFSRegistrarData.address.rskMainnet) as FIFSRegistrar
+```
+
+Replace `web3-v1-contracts` with the proper library version.
+
 ## Setup
 
 ```
