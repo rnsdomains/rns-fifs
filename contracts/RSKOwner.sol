@@ -45,7 +45,6 @@ contract RSKOwner is NodeOwner {
         domain is not transfered and it expires, it might be
         registered by someone else.
     */
-    event Test();
 
     /// @notice Accept domain transfer from previous registrar.
     /// @dev Use it via tokenRegistrar.trnasferRegistrars(label).
@@ -53,7 +52,6 @@ contract RSKOwner is NodeOwner {
     /// @param label Accepted domain label.
     /// @param deed Deed contract address holding tokens.
     function acceptRegistrarTransfer(bytes32 label, TokenDeed deed, uint) external onlyPreviousRegistrar {
-        emit Test();
         uint256 tokenId = uint256(label);
         expirationTime[tokenId] = deed.expirationDate();
         _mint(deed.owner(), tokenId);
