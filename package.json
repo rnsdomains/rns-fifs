@@ -1,7 +1,7 @@
 {
   "name": "@rsksmart/rns-rskregistrar",
   "description": "Registrar for rsk top level domain.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "files": [
     "/contracts",
     "!/contracts/Migrations.sol",
@@ -40,11 +40,11 @@
     "@rsksmart/erc677": "^1.0.1",
     "@rsksmart/rns-auction-registrar": "^1.0.1",
     "@rsksmart/rns-registry": "^1.0.0",
-    "@rsksmart/rns-resolver": "^1.0.1",
-    "@truffle/hdwallet-provider": "^1.0.33"
+    "@rsksmart/rns-resolver": "^1.0.1"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.1",
+    "@truffle/hdwallet-provider": "^1.0.33",
     "chai": "^4.2.0",
     "eth-ens-namehash": "^2.0.8",
     "mem": ">=4.0.0",
