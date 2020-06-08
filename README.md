@@ -156,3 +156,4 @@ npm i @rsksmart/rns-rskregistrar
 2. https://github.com/OpenZeppelin/openzeppelin-contracts implementation.
 3. https://eips.ethereum.org/EIPS/eip-20
 4. https://github.com/ethereum/EIPs/issues/677
+
