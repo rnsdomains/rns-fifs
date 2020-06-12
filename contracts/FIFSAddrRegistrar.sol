@@ -1,7 +1,7 @@
 pragma solidity ^0.5.3;
 
 import "@rsksmart/rns-registry/contracts/AbstractRNS.sol";
-import "@rsksmart/rns-resolver/contracts/AbstractAddrResolver.sol";
+import "@rsksmart/rns-resolver/contracts/legacy/AbstractAddrResolver.sol";
 import "./FIFSRegistrarBase.sol";
 import "./PricedContract.sol";
 

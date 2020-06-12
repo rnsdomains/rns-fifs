@@ -40,7 +40,7 @@
     "@rsksmart/erc677": "^1.0.1",
     "@rsksmart/rns-auction-registrar": "^1.0.1",
     "@rsksmart/rns-registry": "^1.0.0",
-    "@rsksmart/rns-resolver": "^1.0.1"
+    "@rsksmart/rns-resolver": "^2.0.0"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.1",
