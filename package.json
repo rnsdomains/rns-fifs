@@ -1,7 +1,7 @@
 {
   "name": "@rsksmart/rns-rskregistrar",
   "description": "Registrar for rsk top level domain.",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "files": [
     "/contracts",
     "!/contracts/Migrations.sol",
