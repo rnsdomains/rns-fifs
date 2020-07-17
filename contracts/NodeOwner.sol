@@ -4,8 +4,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
 import "@rsksmart/rns-registry/contracts/AbstractRNS.sol";
+import "./AbstractNodeOwner.sol";
 
-contract NodeOwner is ERC721, Ownable {
+contract NodeOwner is ERC721, Ownable, AbstractNodeOwner {
     using Roles for Roles.Role;
 
     AbstractRNS private rns;
