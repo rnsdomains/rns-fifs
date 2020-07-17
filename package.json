@@ -1,7 +1,7 @@
 {
   "name": "@rsksmart/rns-rskregistrar",
   "description": "Registrar for rsk top level domain.",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "files": [
     "/contracts",
     "!/contracts/Migrations.sol",
@@ -48,7 +48,7 @@
     "chai": "^4.2.0",
     "eth-ens-namehash": "^2.0.8",
     "mem": ">=4.0.0",
-    "truffle": "^5.1.18",
+    "truffle": "^5.1.34",
     "typechain": "^1.0.5",
     "typechain-target-ethers": "^1.0.4",
     "typechain-target-truffle": "^1.0.2",
