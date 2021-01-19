@@ -29,7 +29,7 @@
     "types-generation": "typechain --target=web3-v1 '*Data.json' && typechain --target=web3-v2 '*Data.json' && typechain --target=truffle '*Data.json' && typechain --target=ethers '*Data.json'"
   },
   "author": "rnsdomains",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/rnsdomains/rns-fifs/issues"
   },
