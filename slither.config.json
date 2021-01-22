@@ -1,4 +1,4 @@
 {
-    "filter_paths": "BytesUtils.sol,node_modules",
+    "filter_paths": "BytesUtils.sol|node_modules",
     "detectors_to_exclude": "pragma,calls-loop"
 }
