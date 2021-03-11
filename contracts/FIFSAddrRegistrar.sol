@@ -62,7 +62,7 @@ contract FIFSAddrRegistrar is FIFSRegistrarBase, PricedContract {
         | owner      | 20 bytes      - offset  4
         | secret     | 32 bytes      - offest 24
         | duration   | 32 bytes      - offset 56
-        | duration   | 20 bytes      - offset 88
+        | addr       | 20 bytes      - offset 88
         | name       | variable size - offset 108
     */
 
