@@ -36,7 +36,7 @@
   "homepage": "https://github.com/rnsdomains/rns-fifs#readme",
   "dependencies": {
     "@ensdomains/ethregistrar": "1.2.2",
-    "@openzeppelin/contracts": "^2.3.0",
+    "@openzeppelin/contracts": "^4.4.2",
     "@rsksmart/erc677": "^1.0.1",
     "@rsksmart/rns-auction-registrar": "^1.0.1",
     "@rsksmart/rns-registry": "^1.0.0",
