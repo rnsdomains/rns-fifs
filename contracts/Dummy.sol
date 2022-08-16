@@ -1,4 +1,5 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
 import "@rsksmart/rns-registry/contracts/RNS.sol";
 import "@rsksmart/rns-auction-registrar/contracts/TokenRegistrar.sol";

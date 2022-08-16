@@ -1,6 +1,7 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AbstractNamePrice.sol";
 
 contract PricedContract is Ownable {
@@ -8,7 +9,7 @@ contract PricedContract is Ownable {
 
     event NamePriceChanged(AbstractNamePrice contractAddress);
 
-    constructor(AbstractNamePrice _namePrice) public Ownable() {
+    constructor(AbstractNamePrice _namePrice) {
         namePrice = _namePrice;
     }
 

@@ -1,16 +1,13 @@
-pragma solidity ^0.5.3;
-
-import "@openzeppelin/contracts/math/SafeMath.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
 library BytesUtils {
-    using SafeMath for uint256;
-
     modifier minLength (uint size, uint offset, uint length) {
-        require(size >= offset.add(length), "Short input");
+        require(size >= offset + length, "Short input");
         _;
     }
 
-    function toBytes32 (bytes memory input, uint offset) public view minLength(input.length, offset, 32) returns (bytes32) {
+    function toBytes32 (bytes memory input, uint offset) public pure minLength(input.length, offset, 32) returns (bytes32) {
         bytes32 output;
 
         assembly {
@@ -20,7 +17,7 @@ library BytesUtils {
         return output;
     }
 
-    function toBytes4 (bytes memory input, uint offset) public view minLength(input.length, offset, 4) returns (bytes4) {
+    function toBytes4 (bytes memory input, uint offset) public pure minLength(input.length, offset, 4) returns (bytes4) {
         bytes4 output;
 
         assembly {
@@ -30,12 +27,12 @@ library BytesUtils {
         return output;
     }
 
-    function toUint (bytes memory input, uint offset) public view returns (uint) {
+    function toUint (bytes memory input, uint offset) public pure returns (uint) {
         return uint(toBytes32(input, offset));
     }
 
     // source: https://github.com/GNSPS/solidity-bytes-utils/blob/master/contracts/BytesLib.sol
-    function toString (bytes memory input, uint offset, uint strLength) public view minLength(input.length, offset, strLength) returns (string memory) {
+    function toString (bytes memory input, uint offset, uint strLength) public pure minLength(input.length, offset, strLength) returns (string memory) {
         bytes memory output;
 
         assembly {
@@ -90,7 +87,7 @@ library BytesUtils {
         return string(output);
     }
 
-    function toAddress (bytes memory input, uint offset) public view minLength(input.length, offset, 20) returns (address) {
+    function toAddress (bytes memory input, uint offset) public pure minLength(input.length, offset, 20) returns (address) {
         bytes20 output;
 
         assembly {
