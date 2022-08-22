@@ -1,9 +1,9 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 import "@rsksmart/erc677/contracts/ERC677.sol";
-import "@rsksmart/erc677/contracts/ERC677TransferReceiver.sol";
+import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "./NodeOwner.sol";
 import "./AbstractNamePrice.sol";
 import "./BytesUtils.sol";
@@ -13,7 +13,7 @@ import "./BytesUtils.sol";
 /// @notice This is an abstract contract. A Registrar can inherit from
 /// this contract to implement basic commit-reveal and admin functionality.
 /// @dev Inherited contract should have registrar permission in Node Owner.
-contract FIFSRegistrarBase is ERC677TransferReceiver, Ownable {
+contract FIFSRegistrarBase is IERC677TransferReceiver, Ownable {
     using SafeMath for uint256;
     using StringUtils for string;
     using BytesUtils for bytes;

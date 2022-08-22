@@ -1,4 +1,4 @@
-pragma solidity ^0.5.3;
+pragma solidity ^0.8.16;
 
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 

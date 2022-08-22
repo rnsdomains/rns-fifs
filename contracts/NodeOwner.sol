@@ -1,13 +1,15 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "@openzeppelin/contracts/access/Roles.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@rsksmart/rns-registry/contracts/AbstractRNS.sol";
 import "./AbstractNodeOwner.sol";
 
-contract NodeOwner is ERC721, Ownable, AbstractNodeOwner {
-    using Roles for Roles.Role;
+contract NodeOwner is ERC721, Ownable, AbstractNodeOwner, AccessControl {
+    bytes32 public constant RENEWER_ROLE = keccak256("RENEWER_ROLE");
+    bytes32 public constant REGISTRAR_ROLE = keccak256("REGISTRAR_ROLE");
 
     AbstractRNS private rns;
     bytes32 private rootNode;
@@ -17,12 +19,12 @@ contract NodeOwner is ERC721, Ownable, AbstractNodeOwner {
     event ExpirationChanged(uint256 tokenId, uint expirationTime);
 
     modifier onlyRegistrar {
-        require(registrars.has(msg.sender), "Only registrar.");
+        require(hasRole(REGISTRAR_ROLE, msg.sender), "Only registrar.");
         _;
     }
 
     modifier onlyRenewer {
-        require(renewers.has(msg.sender), "Only renewer.");
+        require(hasRole(RENEWER_ROLE, msg.sender), "Only renewer.");
         _;
     }
 
@@ -81,27 +83,26 @@ contract NodeOwner is ERC721, Ownable, AbstractNodeOwner {
     */
 
     // An account with registrar role can register domains.
-    Roles.Role registrars;
 
     /// @notice Give an account access to registrar role.
     /// @dev Only owner.
     /// @param registrar new registrar.
     function addRegistrar(address registrar) external onlyOwner {
-        registrars.add(registrar);
+        grantRole(REGISTRAR_ROLE, registrar);
     }
 
     /// @notice Check if an account has registrar role.
     /// @param registrar to query if has registrar role.
     /// @return true if it has registrar role.
     function isRegistrar(address registrar) external view returns (bool) {
-        return registrars.has(registrar);
+        return hasRole(REGISTRAR_ROLE, registrar);
     }
 
     /// @notice Remove an account's access to registrar role.
     /// @dev Only owner
     /// @param registrar registrar to remove from registrar role.
     function removeRegistrar(address registrar) external onlyOwner {
-        registrars.remove(registrar);
+        revokeRole(REGISTRAR_ROLE, registrar);
     }
 
     /// @notice Registers a domain in RNS for a given duration.
@@ -155,27 +156,26 @@ contract NodeOwner is ERC721, Ownable, AbstractNodeOwner {
     */
 
     // An account with renewer role can extend domain expirations.
-    Roles.Role renewers;
 
     /// @notice Give an account access to renewer role.
     /// @dev Only owner
     /// @param renewer new renewer.
     function addRenewer(address renewer) external onlyOwner {
-        renewers.add(renewer);
+        grantRole(RENEWER_ROLE, renewer);
     }
 
     /// @notice Check if an account has renewer role.
     /// @param renewer to query if has renewer role.
     /// @return true if it has renewer role.
     function isRenewer(address renewer) external view returns (bool) {
-        return renewers.has(renewer);
+        return hasRole(RENEWER_ROLE, renewer);
     }
 
     /// @notice Remove an account's access to renewer role.
     /// @dev Only owner
     /// @param renewer renewer to remove from renewer role.
     function removeRenewer(address renewer) external onlyOwner {
-        renewers.remove(renewer);
+        revokeRole(RENEWER, renewer);
     }
 
     /// @notice Renew a domain for a given duraiton.

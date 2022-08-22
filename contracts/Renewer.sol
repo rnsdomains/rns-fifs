@@ -1,9 +1,9 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@ensdomains/ethregistrar/contracts/StringUtils.sol";
 import "@rsksmart/erc677/contracts/ERC677.sol";
-import "@rsksmart/erc677/contracts/ERC677TransferReceiver.sol";
+import "@rsksmart/erc677/contracts/IERC677TransferReceiver.sol";
 import "./NodeOwner.sol";
 import "./PricedContract.sol";
 import "./AbstractNamePrice.sol";
@@ -12,7 +12,7 @@ import "./BytesUtils.sol";
 /// @title Simple renewer.
 /// @notice You can use this contract to renew names registered in Node Owner.
 /// @dev This contract has permission to renew in Node Owner.
-contract Renewer is PricedContract, ERC677TransferReceiver {
+contract Renewer is PricedContract, IERC677TransferReceiver {
     using SafeMath for uint256;
     using StringUtils for string;
     using BytesUtils for bytes;

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.3;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.16;
 
 import "./FIFSRegistrarBase.sol";
 import "./PricedContract.sol";
